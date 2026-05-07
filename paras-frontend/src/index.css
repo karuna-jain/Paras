@@ -1,0 +1,173 @@
+@import "tailwindcss";
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: #d6dbe2;
+  font-family: Tahoma, Verdana, sans-serif;
+}
+
+/* MAIN APP */
+.app-container {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: #d6dbe2;
+  display: flex;
+  flex-direction: column;
+}
+
+/* TOP MENU */
+.desktop-menu-bar {
+  height: 34px;
+  background: #eef2f5;
+  border-bottom: 1px solid #a8b4c0;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  font-size: 11px;
+  color: #1e2f5c;
+  flex-shrink: 0;
+}
+
+.menu-brand {
+  width: 70px;
+  font-weight: bold;
+  color: #2448b8;
+}
+
+.menu-item {
+  padding: 0 10px;
+  cursor: pointer;
+  line-height: 34px;
+}
+
+.menu-item:hover {
+  background: #dce8f7;
+}
+
+.menu-date {
+  margin-left: auto;
+  color: #4f6075;
+  font-size: 11px;
+}
+
+/* TOOLBAR */
+.desktop-toolbar {
+  height: 84px;
+  background: #d7dde5;
+  border-bottom: 1px solid #aab6c2;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  overflow-x: auto;
+  flex-shrink: 0;
+}
+
+.toolbar-btn {
+  width: 74px;
+  height: 72px;
+  border: 1px solid #aab6c2;
+  background: #f6f6f6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  cursor: pointer;
+  font-size: 11px;
+  color: #1d2f5c;
+}
+
+.toolbar-btn:hover {
+  background: #ebf3ff;
+}
+
+.toolbar-btn.active {
+  background: #dcecff;
+  border-color: #4c7dff;
+}
+
+.toolbar-icon {
+  font-size: 24px;
+}
+
+/* CONTENT AREA */
+.content-area {
+  flex: 1;
+  overflow: hidden;
+  background: #d6dbe2;
+  position: relative;
+}
+
+/* HOME SCREEN */
+.home-container {
+  width: 100%;
+  height: 100%;
+  background: #d6dbe2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.year-text {
+  font-size: 24px;
+  font-weight: bold;
+  color: #2d3fa5;
+  margin-bottom: 20px;
+}
+
+.logo-placeholder {
+  width: 220px;
+  height: 220px;
+  background: white;
+  border: 2px solid #8fa3b6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: #666;
+  margin-bottom: 30px;
+}
+
+.company-title {
+  font-size: 42px;
+  font-weight: bold;
+  color: #2747a6;
+  letter-spacing: 2px;
+}
+
+.company-subtitle {
+  font-size: 22px;
+  margin-top: 8px;
+  color: #445;
+}
+
+/* REMOVE MODERN STYLING */
+.card,
+.dashboard-grid,
+.form-group,
+.btn,
+.btn-primary,
+.btn-danger,
+.data-table-container,
+.data-table {
+  all: unset;
+}
+
+/* DEFAULT INPUTS */
+input,
+select,
+textarea {
+  font-family: Tahoma, Verdana, sans-serif;
+}

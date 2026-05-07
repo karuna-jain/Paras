@@ -16,8 +16,12 @@ public class SalesOrder {
     private String customerName;
 
     private String address;
+    private String city;
+    private String orderDate;
+    private String remarks;
+    private String partyCd;
     private Double amount = 0.0;
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SalesOrderItem> items;
 }

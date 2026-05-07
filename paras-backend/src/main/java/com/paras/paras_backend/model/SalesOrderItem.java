@@ -13,6 +13,7 @@ public class SalesOrderItem {
 
     @ManyToOne
     @JoinColumn(name = "order_id")
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private SalesOrder order;
 
     private String brand;
@@ -24,4 +25,12 @@ public class SalesOrderItem {
     private Double rate = 0.0;
     private Double discountPercent = 0.0;
     private Double amount = 0.0;
+
+    public String getBrand() {
+        return brand;
+    }
+
+    public void setBrand(String brand) {
+        this.brand = brand;
+    }
 }
