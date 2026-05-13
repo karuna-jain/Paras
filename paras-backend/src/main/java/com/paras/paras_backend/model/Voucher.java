@@ -14,7 +14,7 @@ public class Voucher {
     private String vType; 
     private String date;
     
-    private Integer acCode;
+    private String partyCd;
     
     private Double amount = 0.0;
     private String crDr; // CR or DR

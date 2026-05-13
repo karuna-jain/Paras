@@ -1,8 +1,15 @@
 package com.paras.paras_backend.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
+import lombok.Data;
+import java.math.BigDecimal;
 
+@Data
 @Entity
+@Table(name = "part")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Part {
 
     @Id
@@ -11,58 +18,76 @@ public class Part {
 
     private String brand;
 
+    @Column(name = "part_no")
+    @JsonProperty("partNo")
     private String partNo;
 
     private String description;
-
     private String model;
+    private String models;
+    private String hsn;
 
-    private Double mrp;
+    @Column(name = "hsn_desc")
+    @JsonProperty("hsnDesc")
+    private String hsnDesc;
 
-    public Part() {
-    }
+    private String gst;
+    private BigDecimal mrp;
 
-    public Long getId() {
-        return id;
-    }
+    @Column(name = "purchase_price")
+    @JsonProperty("purchasePrice")
+    private BigDecimal purchasePrice;
 
-    public String getBrand() {
-        return brand;
-    }
+    @Column(name = "purchase_discount")
+    @JsonProperty("purchaseDiscount")
+    private BigDecimal purchaseDiscount;
 
-    public void setBrand(String brand) {
-        this.brand = brand;
-    }
+    @Column(name = "purchase_final")
+    @JsonProperty("purchaseFinal")
+    private BigDecimal purchaseFinal;
 
-    public String getPartNo() {
-        return partNo;
-    }
+    @Column(name = "wholesale_price")
+    @JsonProperty("wholesalePrice")
+    private BigDecimal wholesalePrice;
 
-    public void setPartNo(String partNo) {
-        this.partNo = partNo;
-    }
+    @Column(name = "wholesale_discount")
+    @JsonProperty("wholesaleDiscount")
+    private BigDecimal wholesaleDiscount;
 
-    public String getDescription() {
-        return description;
-    }
+    @Column(name = "wholesale_final")
+    @JsonProperty("wholesaleFinal")
+    private BigDecimal wholesaleFinal;
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
+    @Column(name = "retail_price")
+    @JsonProperty("retailPrice")
+    private BigDecimal retailPrice;
 
-    public String getModel() {
-        return model;
-    }
+    @Column(name = "retail_discount")
+    @JsonProperty("retailDiscount")
+    private BigDecimal retailDiscount;
 
-    public void setModel(String model) {
-        this.model = model;
-    }
+    @Column(name = "retail_final")
+    @JsonProperty("retailFinal")
+    private BigDecimal retailFinal;
 
-    public Double getMrp() {
-        return mrp;
-    }
+    private Integer opening;
+    private Integer reorder;
 
-    public void setMrp(Double mrp) {
-        this.mrp = mrp;
-    }
+    @Column(name = "max_lvl")
+    @JsonProperty("maxLvl")
+    private Integer maxLvl;
+
+    @Column(name = "item_unit")
+    @JsonProperty("itemUnit")
+    private String itemUnit;
+
+    @Column(name = "pack_of")
+    @JsonProperty("packOf")
+    private Integer packOf;
+
+    @Column(name = "location_i")
+    @JsonProperty("locationI")
+    private String locationI;
+
+    private String remarks;
 }

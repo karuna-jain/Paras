@@ -54,7 +54,7 @@ const thStyle = (extra = {}) => ({
   ...extra,
 });
 
-export default function PickSlipPrintView({ formData, items, totalAmount, onBack }) {
+export default function PickSlipPrintView({ formData, items, totalAmount, onBack, onCreateBill, fromOrderId }) {
   const printAreaRef = useRef(null);
   const [generating, setGenerating] = useState(false);
 
@@ -63,6 +63,22 @@ export default function PickSlipPrintView({ formData, items, totalAmount, onBack
   const totalItems = items.length;
 
   const handlePrint = () => window.print();
+  
+  const handleCreateBill = () => {
+    if (onCreateBill) {
+      onCreateBill({
+        ...formData,
+        fromOrderId: fromOrderId,
+        amount: totalAmount,
+        items: items.map(i => ({
+          ...i,
+          qty: i.qty || i.ordQty || 0,
+          rate: i.rate || i.list || 0,
+          discount: i.discount || i.dis || 0
+        }))
+      });
+    }
+  };
 
   const getPdfFile = async () => {
     const element = printAreaRef.current;
@@ -119,6 +135,7 @@ export default function PickSlipPrintView({ formData, items, totalAmount, onBack
       }}>
         {[
           { label: 'Print Challan', color: '#3182ce', action: handlePrint },
+          { label: 'Create Bill', color: '#ff8c00', action: handleCreateBill },
           { label: generating ? 'Generating...' : 'Email PDF', color: '#dd6b20', action: () => sharePdf('email') },
           { label: generating ? 'Generating...' : 'WhatsApp PDF', color: '#38a169', action: () => sharePdf('WhatsApp') },
           { label: 'Back to Order', color: '#718096', action: onBack },

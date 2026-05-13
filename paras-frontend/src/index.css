@@ -153,19 +153,245 @@ body,
   color: #445;
 }
 
-/* REMOVE MODERN STYLING */
-.card,
-.dashboard-grid,
-.form-group,
-.btn,
-.btn-primary,
-.btn-danger,
-.data-table-container,
+/* TABLE STYLES */
+.data-table-container {
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background: white;
+}
+
 .data-table {
-  all: unset;
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  background: white;
+}
+
+.data-table thead th {
+  background: #ebf3ff;
+  color: #003399;
+  padding: 8px 10px;
+  text-align: left;
+  border-bottom: 2px solid #003399;
+  border-right: 1px solid #c0d1e6;
+  position: sticky;
+  top: 0;
+  white-space: nowrap;
+  font-weight: bold;
+}
+
+.data-table tbody td {
+  padding: 6px 10px;
+  border-bottom: 1px solid #e0e0e0;
+  border-right: 1px solid #e0e0e0;
+  color: #333;
+}
+
+.data-table tbody tr:hover {
+  background-color: #f0f7ff !important;
+}
+
+.data-table tbody tr.selected {
+  background-color: #000080 !important;
+  color: white !important;
+}
+
+.data-table tbody tr.selected td {
+  color: white !important;
 }
 
 /* DEFAULT INPUTS */
+
+/* ENTRY FORM STYLES */
+.entry-header-section {
+  background: #f7fafc;
+  border: 1px solid #cbd5e0;
+  padding: 15px;
+  margin-bottom: 10px;
+  border-radius: 4px;
+}
+
+.entry-form-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.form-label {
+  font-weight: bold;
+  font-size: 11px;
+  color: #2d3748;
+  text-transform: uppercase;
+}
+
+.label-bold {
+  font-weight: bold;
+  font-size: 11px;
+  color: #1a365d;
+  white-space: nowrap;
+}
+
+.form-input, .input-standard {
+  padding: 4px 8px;
+  border: 1px solid #cbd5e0;
+  font-size: 13px;
+  background-color: white;
+  height: 28px;
+  outline: none;
+  border-radius: 2px;
+}
+
+.form-input:focus, .input-standard:focus {
+  border-color: #3182ce;
+  box-shadow: 0 0 0 1px #3182ce;
+}
+
+.ac-code-input {
+  background-color: #fffaf0;
+  border-color: #f6ad55;
+  color: #c05621;
+  font-weight: bold;
+  text-align: center;
+}
+
+.rate-box {
+  border: 1px solid #e2e8f0;
+  padding: 12px;
+  background: #edf2f7;
+  text-align: center;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rate-box strong {
+  color: #2d3748;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.floating-action-box {
+  position: absolute;
+  bottom: 80px;
+  right: 40px;
+  background: white;
+  border: 1px solid #3182ce;
+  padding: 20px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  z-index: 100;
+  border-radius: 8px;
+}
+
+.action-bar {
+  display: flex;
+  justify-content: space-between;
+  background: #3182ce;
+  padding: 8px 12px;
+  color: white;
+  border-radius: 4px 4px 0 0;
+  border: 1px solid #2b6cb0;
+}
+
+.action-btn {
+  padding: 4px 14px;
+  font-weight: bold;
+  background: #ebf8ff;
+  border: 1px solid #3182ce;
+  color: #2c5282;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.action-btn:hover {
+  background: #bee3f8;
+}
+
+.action-btn-primary {
+  background: #2b6cb0;
+  color: white;
+  border: 1px solid #1a365d;
+}
+
+.action-btn-primary:hover {
+  background: #2c5282;
+}
+
+/* MODAL STYLES */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  border: 1px solid #9caab7;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.modal-header {
+  background: #2b6cb0;
+  color: white;
+  padding: 8px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: bold;
+  font-size: 13px;
+}
+
+.modal-body {
+  padding: 12px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.modal-close-btn {
+  background: none;
+  border: none;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 0 4px;
+}
+
+.modal-close-btn:hover {
+  color: #ebf8ff;
+}
+
 input,
 select,
 textarea {
