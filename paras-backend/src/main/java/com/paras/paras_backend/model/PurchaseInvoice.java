@@ -14,11 +14,11 @@ public class PurchaseInvoice {
 
     private String invoiceNo;
 
-    private Integer acCode;
+    private String partyCd;
     private String supplierName;
     private String date;
 
-    private Double totalAmount = 0.0;
+    private Double amount = 0.0;
 
     @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL)
     private List<PurchaseInvoiceItem> items;

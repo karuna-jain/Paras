@@ -2,24 +2,25 @@ package com.paras.paras_backend.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Data
-@Table(name = "sales_invoice_items")
-public class SalesInvoiceItem {
+@Table(name = "purchase_order_items")
+public class PurchaseOrderItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "invoice_id")
-    private SalesInvoice invoice;
+    @JoinColumn(name = "purchase_order_id")
+    @JsonIgnore
+    private PurchaseOrder purchaseOrder;
 
-    private Long partId;
+    private String brand;
     private String partNo;
     private String description;
-    
-    private Double qty = 1.0;
+    private Double qty = 0.0;
     private Double rate = 0.0;
     private Double amount = 0.0;
 }

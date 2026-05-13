@@ -21,8 +21,24 @@ public class SalesOrderController {
     private AccountRepository accountRepository;
 
     @GetMapping
-    public List<SalesOrder> getAllSalesOrders() {
+    public List<SalesOrder> getAllSalesOrders(@RequestParam(required = false) Boolean billed) {
+        if (billed != null) {
+            return salesOrderRepository.findByBilled(billed);
+        }
         return salesOrderRepository.findAll();
+    }
+
+    @PatchMapping("/{id}/mark-billed")
+    public SalesOrder markAsBilled(
+            @PathVariable Long id,
+            @RequestParam String billNo) {
+        return salesOrderRepository.findById(id)
+                .map(order -> {
+                    order.setBilled(true);
+                    order.setBillNo(billNo);
+                    return salesOrderRepository.save(order);
+                })
+                .orElseThrow();
     }
 
     @PostMapping
@@ -32,13 +48,7 @@ public class SalesOrderController {
             salesOrder.getItems().forEach(item -> item.setOrder(salesOrder));
         }
 
-        SalesOrder savedOrder = salesOrderRepository.save(salesOrder);
-
-        updateAccountBalance(
-                savedOrder.getPartyCd(),
-                savedOrder.getAmount());
-
-        return savedOrder;
+        return salesOrderRepository.save(salesOrder);
     }
 
     @PutMapping("/{id}")
@@ -76,10 +86,6 @@ public class SalesOrderController {
     public void deleteSalesOrder(@PathVariable Long id) {
 
         salesOrderRepository.findById(id).ifPresent(order -> {
-
-            updateAccountBalance(
-                    order.getPartyCd(),
-                    -(order.getAmount() != null ? order.getAmount() : 0.0));
 
             salesOrderRepository.delete(order);
         });
