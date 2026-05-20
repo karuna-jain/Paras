@@ -16,7 +16,7 @@ export default function SalesOrderView({ onExit, reportMode = false, onCreateBil
 
   const loadOrders = async () => {
     try {
-      const data = await getSalesOrders();
+      const data = await getSalesOrders(false); // Only fetch unbilled (pick slip not created)
       setOrders(data);
     } catch (err) {
       console.error('Failed to load orders', err);
@@ -331,7 +331,15 @@ export default function SalesOrderView({ onExit, reportMode = false, onCreateBil
                       {o.amount != null ? o.amount.toFixed(2) : '0'}
                     </td>
                     <td style={tdStyle('left')}>{o.city || ''}</td>
-                    <td style={tdStyle('left')}>{o.orderDate || ''}</td>
+                    <td style={tdStyle('left')}>
+                      {o.orderDate ? (() => {
+                        const parts = o.orderDate.split('-');
+                        if (parts.length === 3) {
+                          return `${parts[2]}-${parts[1]}-${parts[0].slice(2)}`;
+                        }
+                        return o.orderDate;
+                      })() : ''}
+                    </td>
                     <td style={tdStyle('left')}>{o.remarks || ''}</td>
                     <td style={tdStyle('left')}>{o.partyCd || ''}</td>
                   </tr>

@@ -29,6 +29,7 @@ import QuotationView from './QuotationView'
 import PurchaseOrderView from './PurchaseOrderView'
 import QueryView from './QueryView'
 import SetupView from './SetupView'
+import LedgerQuery from './LedgerQuery'
 
 
 const menuItemStyle = {
@@ -161,6 +162,7 @@ function App() {
         activeTab !== 'company-setup' &&
         activeTab !== 'user-permissions' &&
         activeTab !== 'accounts' &&
+        activeTab !== 'ledger-query' &&
         activeTab !== 'pick-slip-report' && (
 
           <>
@@ -200,14 +202,18 @@ function App() {
                 </div>
                 {activeDropdown === 'entry' && (
                   <div style={dropdownContainerStyle}>
-                    <div style={menuItemStyle} onClick={() => { setActiveTab('sales-orders'); setActiveDropdown(null); }}>Sales Order</div>
-                    <div style={menuItemStyle} onClick={() => { setActiveTab('wholesale'); setActiveDropdown(null); }}>Whole-Sale</div>
-                    <div style={menuItemStyle} onClick={() => { setActiveTab('retail'); setActiveDropdown(null); }}>Retail Bill</div>
-                    <div style={menuItemStyle} onClick={() => { setActiveTab('quotation'); setActiveDropdown(null); }}>Quotation</div>
-                    <div style={menuItemStyle} onClick={() => { setActiveTab('purchase-orders'); setActiveDropdown(null); }}>Purchase Order</div>
-                    <div style={menuItemStyle} onClick={() => { setActiveTab('purchases'); setActiveDropdown(null); }}>Purchases</div>
-                    <div style={menuItemStyle} onClick={() => { setActiveTab('cb-voucher'); setActiveDropdown(null); }}>Cash/Bank Voucher</div>
-                    <div style={menuItemStyle} onClick={() => { setActiveTab('j-voucher'); setActiveDropdown(null); }}>Journal Voucher</div>
+                    <div style={menuItemStyle} onClick={() => { setActiveTab('wholesale'); setActiveDropdown(null); }}>SALES (WHOLE SALE) ENTRY &gt;</div>
+                    <div style={menuItemStyle} onClick={() => { setActiveTab('retail'); setActiveDropdown(null); }}>SALES (RETAIL) ENTRY &gt;</div>
+                    <div style={menuItemStyle} onClick={() => { setActiveTab('quotation'); setActiveDropdown(null); }}>QUOTATION ENTRY &gt;</div>
+                    <div style={menuItemStyle} onClick={() => { setActiveTab('purchases'); setActiveDropdown(null); }}>PURCHASE ENTRY &gt;</div>
+                    <div style={menuItemStyle} onClick={() => { setActiveTab('purchase-return'); setActiveDropdown(null); }}>PURCHASE RETURN &gt;</div>
+                    <div style={menuItemStyle} onClick={() => { setActiveTab('sales-orders'); setActiveDropdown(null); }}>SALES ORDERS</div>
+                    <div style={menuItemStyle} onClick={() => { setActiveTab('purchase-orders'); setActiveDropdown(null); }}>PURCHASE ORDERS</div>
+                    <div style={menuItemStyle} onClick={() => { setActiveTab('cb-voucher'); setActiveDropdown(null); }}>CB VOUCHER ENTRY &gt;</div>
+                    <div style={menuItemStyle} onClick={() => { setActiveTab('j-voucher'); setActiveDropdown(null); }}>JV ENTRY &gt;</div>
+                    <div style={menuItemStyle} onClick={() => { setActiveTab('ac-balance'); setActiveDropdown(null); }}>A/C BALANCE ENTRY</div>
+                    <div style={menuItemStyle} onClick={() => { setActiveTab('credit-note'); setActiveDropdown(null); }}>CREDIT NOTE ENTRY &gt;</div>
+                    <div style={menuItemStyle} onClick={() => { setActiveTab('debit-note'); setActiveDropdown(null); }}>DEBIT NOTE ENTRY &gt;</div>
                   </div>
                 )}
               </div>
@@ -225,11 +231,16 @@ function App() {
                 </div>
                 {activeDropdown === 'reports' && (
                   <div style={dropdownContainerStyle}>
-                    <div style={menuItemStyle} onClick={() => { setActiveTab('sales-report'); setActiveDropdown(null); }}>Sales Report</div>
-                    <div style={menuItemStyle} onClick={() => { setActiveTab('purch-report'); setActiveDropdown(null); }}>Purchase Report</div>
-                    <div style={menuItemStyle} onClick={() => { setActiveTab('stock-report'); setActiveDropdown(null); }}>Stock Report</div>
-                    <div style={menuItemStyle} onClick={() => { setActiveTab('ledger-report'); setActiveDropdown(null); }}>Ledger Report</div>
-                    <div style={menuItemStyle} onClick={() => { setActiveTab('pick-slip-report'); setActiveDropdown(null); }}>Pick Slip Report</div>
+                    <div style={menuItemStyle} onClick={() => { setActiveTab('pick-slip-report'); setActiveDropdown(null); }}>PICK - SLIP REPORT</div>
+                    <div style={menuItemStyle} onClick={() => { setActiveTab('quotation-report'); setActiveDropdown(null); }}>QUOTATION - REPORT</div>
+                    <div style={menuItemStyle} onClick={() => { setActiveTab('sales-report'); setActiveDropdown(null); }}>SALES REPORT (GST)</div>
+                    <div style={menuItemStyle} onClick={() => { setActiveTab('purch-report'); setActiveDropdown(null); }}>PURCHASE REPORT (GST)</div>
+                    <div style={menuItemStyle} onClick={() => { setActiveTab('fa-report'); setActiveDropdown(null); }}>F.A. REPORT &gt;</div>
+                    <div style={menuItemStyle} onClick={() => { setActiveTab('credit-note-register'); setActiveDropdown(null); }}>CREDIT NOTE REGISTER</div>
+                    <div style={menuItemStyle} onClick={() => { setActiveTab('stock-statement'); setActiveDropdown(null); }}>STOCK STATEMENT</div>
+                    <div style={menuItemStyle} onClick={() => { setActiveTab('price-list'); setActiveDropdown(null); }}>DISPLAY OF PRICE LIST</div>
+                    <div style={menuItemStyle} onClick={() => { setActiveTab('address-print'); setActiveDropdown(null); }}>ADDRESS PRINT</div>
+                    <div style={menuItemStyle} onClick={() => { setActiveTab('mis-indicators'); setActiveDropdown(null); }}>MIS (KEY-INDICATORS)</div>
                   </div>
                 )}
               </div>
@@ -247,12 +258,23 @@ function App() {
                 </div>
                 {activeDropdown === 'masters' && (
                   <div style={dropdownContainerStyle}>
-                    <div style={menuItemStyle} onClick={() => { setActiveTab('accounts'); setActiveDropdown(null); }}>Account Master</div>
-                    <div style={menuItemStyle} onClick={() => { setActiveTab('brand-master'); setActiveDropdown(null); }}>Brand Master</div>
-                    <div style={menuItemStyle} onClick={() => { setActiveTab('model-master'); setActiveDropdown(null); }}>Model Master</div>
-                    <div style={menuItemStyle} onClick={() => { setActiveTab('hsn-master'); setActiveDropdown(null); }}>HSN Master</div>
-                    <div style={menuItemStyle} onClick={() => { setActiveTab('customers'); setActiveDropdown(null); }}>Customer Master</div>
-                    <div style={menuItemStyle} onClick={() => { setActiveTab('parts'); setActiveDropdown(null); }}>Part Master</div>
+                    <div style={{...menuItemStyle, display: 'flex', justifyContent: 'space-between'}} onClick={() => { setActiveTab('accounts'); setActiveDropdown(null); }}>
+                      <span>ACCOUNT MASTER</span><span>F7</span>
+                    </div>
+                    <div style={menuItemStyle} onClick={() => { setActiveTab('account-group'); setActiveDropdown(null); }}>ACCOUNT GROUP MASTER</div>
+                    <div style={menuItemStyle} onClick={() => { setActiveTab('transporters'); setActiveDropdown(null); }}>TRANSPORTERS</div>
+                    <div style={menuItemStyle} onClick={() => { setActiveTab('hsn-master'); setActiveDropdown(null); }}>HSN MASTER</div>
+                    <div style={{...menuItemStyle, display: 'flex', justifyContent: 'space-between'}} onClick={() => { setActiveTab('parts'); setActiveDropdown(null); }}>
+                      <span>PARTS MASTER</span><span>F6</span>
+                    </div>
+                    <div style={menuItemStyle} onClick={() => { setActiveTab('brand-master'); setActiveDropdown(null); }}>BRAND MASTER</div>
+                    <div style={menuItemStyle} onClick={() => { setActiveTab('model-master'); setActiveDropdown(null); }}>MODEL MASTER</div>
+                    <div style={{...menuItemStyle, display: 'flex', justifyContent: 'space-between'}} onClick={() => { setActiveTab('city-master'); setActiveDropdown(null); }}>
+                      <span>CITY MASTER</span><span>F5</span>
+                    </div>
+                    <div style={menuItemStyle} onClick={() => { setActiveTab('state-master'); setActiveDropdown(null); }}>STATE MASTER</div>
+                    <div style={menuItemStyle} onClick={() => { setActiveTab('customer-rate'); setActiveDropdown(null); }}>CUSTOMER RATE (Discount Scheme)</div>
+                    <div style={menuItemStyle} onClick={() => { setActiveTab('update-brand-discount'); setActiveDropdown(null); }}>UPDATE BRAND WISE DISCOUNT</div>
                   </div>
                 )}
               </div>
@@ -263,8 +285,12 @@ function App() {
                 </div>
                 {activeDropdown === 'query' && (
                   <div style={dropdownContainerStyle}>
-                    <div style={menuItemStyle} onClick={() => { setActiveTab('account-query'); setActiveDropdown(null); }}>Account Query</div>
-                    <div style={menuItemStyle} onClick={() => { setActiveTab('stock-query'); setActiveDropdown(null); }}>Stock Query</div>
+                    <div style={menuItemStyle} onClick={() => { setActiveTab('ledger-query'); setActiveDropdown(null); }}>LEDGER QUERY</div>
+                    <div style={menuItemStyle} onClick={() => { setActiveTab('account-query'); setActiveDropdown(null); }}>ADDRESS QUERY</div>
+                    <div style={menuItemStyle} onClick={() => { setActiveTab('account-query'); setActiveDropdown(null); }}>TRANSPORTER QUERY</div>
+                    <div style={menuItemStyle} onClick={() => { setActiveTab('stock-query'); setActiveDropdown(null); }}>PART / ITEM LOCATION QUERY</div>
+                    <div style={menuItemStyle} onClick={() => { setActiveTab('stock-query'); setActiveDropdown(null); }}>PARTS / ITEMS QUERY</div>
+                    <div style={menuItemStyle} onClick={() => { setActiveTab('stock-query'); setActiveDropdown(null); }}>PARTS LEDGER</div>
                   </div>
                 )}
               </div>
@@ -424,7 +450,7 @@ function App() {
         style={{
           width: '100%',
           height:
-            activeTab === 'sales-orders' || activeTab === 'accounts' || activeTab === 'quotation' || activeTab === 'purchase-orders' || activeTab === 'pick-slip-report'
+            activeTab === 'sales-orders' || activeTab === 'accounts' || activeTab === 'quotation' || activeTab === 'purchase-orders' || activeTab === 'pick-slip-report' || activeTab === 'ledger-query'
               ? '100vh'
               : 'calc(100vh - 118px)',
           overflow: 'hidden',
@@ -514,6 +540,9 @@ function App() {
             )}
             {activeTab === 'account-query' && (
               <QueryView title="Account Query" onExit={() => setActiveTab('home')} />
+            )}
+            {activeTab === 'ledger-query' && (
+              <LedgerQuery onExit={() => setActiveTab('home')} />
             )}
             {activeTab === 'stock-query' && (
               <QueryView title="Stock Query" onExit={() => setActiveTab('home')} />

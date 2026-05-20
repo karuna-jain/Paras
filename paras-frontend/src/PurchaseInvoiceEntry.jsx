@@ -10,9 +10,11 @@ export default function PurchaseInvoiceEntry({ invoice, onBack, onClose }) {
     partyCd: invoice.partyCd || '',
     supplierName: invoice.supplierName || '',
     date: invoice.date || new Date().toISOString().split('T')[0],
+    isReturn: invoice.isReturn || false,
   } : {
     invoiceNo: '', partyCd: '', supplierName: '',
     date: new Date().toISOString().split('T')[0],
+    isReturn: false,
   });
 
   const [items, setItems] = useState(
@@ -158,6 +160,10 @@ export default function PurchaseInvoiceEntry({ invoice, onBack, onClose }) {
              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
               <span style={labelStyle}>INV NO</span>
               <input name="invoiceNo" value={formData.invoiceNo} onChange={handleChange} style={inputStyle} />
+              <label style={{ display: 'flex', alignItems: 'center', gap: '2px', marginLeft: '10px', fontSize: '11px', fontWeight: 'bold', color: '#1d2d5a', cursor: 'pointer' }}>
+                <input type="checkbox" checked={formData.isReturn} onChange={e => setFormData(p => ({ ...p, isReturn: e.target.checked }))} style={{ margin: 0 }} />
+                IS RETURN
+              </label>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
               <span style={labelStyle}>DATE</span>
@@ -177,6 +183,8 @@ export default function PurchaseInvoiceEntry({ invoice, onBack, onClose }) {
           </div>
           <button onClick={() => setShowModal(true)} style={actionBtnStyle}>ADD ITEM</button>
           <button onClick={() => { if (selectedItemIndex !== null) removeItem(selectedItemIndex); }} style={actionBtnStyle}>DELETE ITEM</button>
+          <button onClick={handleSave} style={{ ...actionBtnStyle, background: '#28a745', color: 'white', marginLeft: 'auto' }}>SAVE</button>
+          <button onClick={onBack} style={{ ...actionBtnStyle, marginLeft: '10px' }}>RETURN</button>
         </div>
 
         <div style={{ flex: 1, overflow: 'auto', background: '#cce6ff', border: '1px solid #7a9cbf', margin: '4px', paddingBottom: '80px' }}>

@@ -213,6 +213,8 @@ export default function QuotationEntry({ quotation, onBack, onClose }) {
           </div>
           <button onClick={() => setShowModal(true)} style={actionBtnStyle}>ADD ITEM</button>
           <button onClick={() => { if (selectedItemIndex !== null) removeItem(selectedItemIndex); }} style={actionBtnStyle}>DELETE ITEM</button>
+          <button onClick={handleSave} style={{ ...actionBtnStyle, background: '#28a745', color: 'white', marginLeft: 'auto' }}>SAVE</button>
+          <button onClick={onBack} style={{ ...actionBtnStyle, marginLeft: '10px' }}>RETURN</button>
         </div>
 
         <div style={{ flex: 1, overflow: 'auto', background: '#cce6ff', border: '1px solid #7a9cbf', margin: '4px', paddingBottom: '80px' }}>

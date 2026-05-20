@@ -22,6 +22,8 @@ public class SalesInvoice {
     private Double amount = 0.0;
     private Double paidAmount = 0.0;
     private Long fromOrderId;
+    @Column(name = "is_return_bill")
+    private boolean isReturn = false;
 
     @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL)
     private List<SalesInvoiceItem> items;
