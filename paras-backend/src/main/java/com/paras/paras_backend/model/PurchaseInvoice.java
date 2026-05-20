@@ -19,6 +19,8 @@ public class PurchaseInvoice {
     private String date;
 
     private Double amount = 0.0;
+    
+    private boolean isReturn = false;
 
     @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL)
     private List<PurchaseInvoiceItem> items;

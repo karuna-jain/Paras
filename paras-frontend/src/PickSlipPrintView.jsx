@@ -100,7 +100,7 @@ export default function PickSlipPrintView({ formData, items, totalAmount, onBack
       const bodyText = `Hello ${formData.customerName},\n\nPlease find your Pick Slip / Sales Order attached.\n\nThank you,\nPARAS AUTO PARTS`;
       const textParam = encodeURIComponent(bodyText);
 
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      if (navigator.canShare && navigator.canShare({ files: [file] }) && appType !== 'Save') {
         await navigator.share({ files: [file], title: `Pick Slip - ${formData.customerName}`, text: bodyText });
       } else {
         const url = URL.createObjectURL(file);
@@ -108,12 +108,16 @@ export default function PickSlipPrintView({ formData, items, totalAmount, onBack
         a.href = url; a.download = file.name;
         document.body.appendChild(a); a.click(); document.body.removeChild(a);
         setTimeout(() => {
-          alert(`PDF downloaded as "${file.name}".\nPlease attach it to your ${appType} message.`);
-          if (appType === 'email') {
-            window.open(`mailto:?subject=${encodeURIComponent(`Pick Slip - ${formData.customerName}`)}&body=${textParam}`);
-          } else if (appType === 'WhatsApp') {
-            const phone = (formData.cellNo || formData.phone || '').replace(/[^0-9]/g, '');
-            window.open(`https://wa.me/${phone || ''}?text=${textParam}`, '_blank');
+          if (appType === 'Save') {
+            alert(`PDF saved as "${file.name}".`);
+          } else {
+            alert(`PDF downloaded as "${file.name}".\nPlease attach it to your ${appType} message.`);
+            if (appType === 'email') {
+              window.open(`mailto:?subject=${encodeURIComponent(`Pick Slip - ${formData.customerName}`)}&body=${textParam}`);
+            } else if (appType === 'WhatsApp') {
+              const phone = (formData.cellNo || formData.phone || '').replace(/[^0-9]/g, '');
+              window.open(`https://wa.me/${phone || ''}?text=${textParam}`, '_blank');
+            }
           }
         }, 500);
       }
@@ -136,6 +140,7 @@ export default function PickSlipPrintView({ formData, items, totalAmount, onBack
         {[
           { label: 'Print Challan', color: '#3182ce', action: handlePrint },
           { label: 'Create Bill', color: '#ff8c00', action: handleCreateBill },
+          { label: generating ? 'Generating...' : 'Save PDF', color: '#4a5568', action: () => sharePdf('Save') },
           { label: generating ? 'Generating...' : 'Email PDF', color: '#dd6b20', action: () => sharePdf('email') },
           { label: generating ? 'Generating...' : 'WhatsApp PDF', color: '#38a169', action: () => sharePdf('WhatsApp') },
           { label: 'Back to Order', color: '#718096', action: onBack },

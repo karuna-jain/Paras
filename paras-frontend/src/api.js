@@ -21,7 +21,10 @@ export const createAccount = (account) => api.post('/accounts', account).then(re
 export const updateAccount = (id, account) => api.put(`/accounts/${id}`, account).then(res => res.data);
 export const deleteAccount = (id) => api.delete(`/accounts/${id}`);
 
-export const getSalesOrders = () => api.get('/sales-orders').then(res => res.data);
+export const getSalesOrders = (billed) => {
+  const query = billed !== undefined ? `?billed=${billed}` : '';
+  return api.get(`/sales-orders${query}`).then(res => res.data);
+};
 export const createSalesOrder = (order) => api.post('/sales-orders', order).then(res => res.data);
 export const deleteSalesOrder = (id) => api.delete(`/sales-orders/${id}`);
 export const markSalesOrderAsBilled = (id, billNo) => api.patch(`/sales-orders/${id}/mark-billed?billNo=${billNo}`);
@@ -55,5 +58,8 @@ export const deletePurchaseOrder = (id) => api.delete(`/purchase-orders/${id}`);
 export const getHSNMaster = () => api.get('/hsn-master').then(res => res.data);
 export const createHSNEntry = (hsn) => api.post('/hsn-master', hsn).then(res => res.data);
 export const deleteHSNEntry = (id) => api.delete(`/hsn-master/${id}`);
+
+export const getPendingWhatsappMessage = () => api.get('/whatsapp/pending').then(res => res.data);
+export const markWhatsappProcessed = (id) => api.post(`/whatsapp/mark-processed/${id}`).then(res => res.data);
 
 export default api;

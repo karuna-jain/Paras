@@ -33,7 +33,9 @@ public class PurchaseInvoiceController {
         
         // Update account balance (Purchase increases liability, so subtract from balance if balance is positive assets, 
         // or add if it's credit. Here we'll just follow the same pattern for simplicity)
-        updateAccountBalance(savedInvoice.getPartyCd(), savedInvoice.getAmount());
+        Double total = savedInvoice.getAmount() != null ? savedInvoice.getAmount() : 0.0;
+        Double balanceChange = savedInvoice.isReturn() ? -total : total;
+        updateAccountBalance(savedInvoice.getPartyCd(), balanceChange);
         
         return savedInvoice;
     }
@@ -41,7 +43,9 @@ public class PurchaseInvoiceController {
     @DeleteMapping("/{id}")
     public void deletePurchaseInvoice(@PathVariable Long id) {
         purchaseInvoiceRepository.findById(id).ifPresent(invoice -> {
-            updateAccountBalance(invoice.getPartyCd(), -(invoice.getAmount() != null ? invoice.getAmount() : 0.0));
+            Double total = invoice.getAmount() != null ? invoice.getAmount() : 0.0;
+            Double balanceChange = invoice.isReturn() ? -total : total;
+            updateAccountBalance(invoice.getPartyCd(), -balanceChange);
             purchaseInvoiceRepository.delete(invoice);
         });
     }

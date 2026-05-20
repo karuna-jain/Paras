@@ -37,7 +37,8 @@ public class SalesInvoiceController {
         // Update account balance with remaining amount (Total - Paid)
         Double total = savedInvoice.getAmount() != null ? savedInvoice.getAmount() : 0.0;
         Double paid = savedInvoice.getPaidAmount() != null ? savedInvoice.getPaidAmount() : 0.0;
-        updateAccountBalance(savedInvoice.getPartyCd(), total - paid);
+        Double balanceChange = savedInvoice.isReturn() ? -(total - paid) : (total - paid);
+        updateAccountBalance(savedInvoice.getPartyCd(), balanceChange);
 
         // If created from a sales order, mark the order as billed
         if (savedInvoice.getFromOrderId() != null) {
@@ -56,7 +57,8 @@ public class SalesInvoiceController {
         salesInvoiceRepository.findById(id).ifPresent(invoice -> {
             Double total = invoice.getAmount() != null ? invoice.getAmount() : 0.0;
             Double paid = invoice.getPaidAmount() != null ? invoice.getPaidAmount() : 0.0;
-            updateAccountBalance(invoice.getPartyCd(), -(total - paid));
+            Double balanceChange = invoice.isReturn() ? -(total - paid) : (total - paid);
+            updateAccountBalance(invoice.getPartyCd(), -balanceChange);
             salesInvoiceRepository.delete(invoice);
         });
     }

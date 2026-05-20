@@ -123,6 +123,25 @@ export default function AccountView({ onExit, onSelect }) {
 
   const [formData, setFormData] = useState(initialFormData);
 
+  const getHeadName = (code) => {
+    switch (String(code)) {
+      case '1': return 'SUNDRY DEBTORS';
+      case '2': return 'SUNDRY CREDITORS';
+      case '3': return 'CASH IN HAND';
+      case '4': return 'BANK ACCOUNTS';
+      case '5': return 'DUTIES & TAXES';
+      case '6': return 'SALES ACCOUNTS';
+      case '7': return 'PURCHASE ACCOUNTS';
+      case '8': return 'DIRECT EXPENSES';
+      case '9': return 'INDIRECT EXPENSES';
+      case '10': return 'FIXED ASSETS';
+      case '11': return 'LOANS & ADVANCES';
+      case '12': return 'CAPITAL ACCOUNT';
+      case '13': return 'INVESTMENTS';
+      default: return 'UNKNOWN HEAD';
+    }
+  };
+
   const getNextAcCode = (accountsList) => {
     if (!accountsList || accountsList.length === 0) return '100001';
     const codes = accountsList
@@ -266,7 +285,7 @@ export default function AccountView({ onExit, onSelect }) {
               <label style={labelStyle}>HEAD CODE</label>
               <div style={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
                 <input name="headCode" value={formData.headCode} onChange={handleChange} style={{ width: '40px', ...inputStyle }} />
-                <span style={{ color: '#003399', fontWeight: 'bold', fontSize: '13px' }}>SUNDRY DEBTORS</span>
+                <span style={{ color: '#003399', fontWeight: 'bold', fontSize: '13px' }}>{getHeadName(formData.headCode)}</span>
               </div>
               <label style={{ ...labelStyle, textAlign: 'right' }}>A/C CODE</label>
               <input name="acCode" value={formData.acCode} onChange={handleChange} style={{ ...inputStyle, background: '#ffccff', fontWeight: 'bold', color: 'red', textAlign: 'center' }} />

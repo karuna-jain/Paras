@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getParts, getAccounts, createSalesOrder } from './api';
+import { getParts, getAccounts, createSalesOrder, getPendingWhatsappMessage, markWhatsappProcessed } from './api';
 import { FaShoppingCart } from 'react-icons/fa';
 import PickSlipPrintView from './PickSlipPrintView';
 import AccountView from './AccountView';
@@ -44,6 +44,9 @@ export default function SalesOrderEntry({ order, onBack, onClose, prefilledAccou
   const [showPrintDialog, setShowPrintDialog] = useState(false);
   const [showPickSlip, setShowPickSlip] = useState(false);
   const [showNewAccountModal, setShowNewAccountModal] = useState(false);
+  const [showWaModal, setShowWaModal] = useState(false);
+  const [waText, setWaText] = useState('');
+  const [pendingWaMsgId, setPendingWaMsgId] = useState(null);
   const [selectedItemIndex, setSelectedItemIndex] = useState(null);
   const [savedOrderId, setSavedOrderId] = useState(order?.id || null);
 
@@ -127,6 +130,100 @@ export default function SalesOrderEntry({ order, onBack, onClose, prefilledAccou
     setSelectedItemIndex(null);
   };
 
+  const fetchWaMessage = async () => {
+    try {
+      const msg = await getPendingWhatsappMessage();
+      if (msg && msg.body) {
+        setWaText(msg.body);
+        setPendingWaMsgId(msg.id);
+        
+        // Try to match account by requested name if provided, else fall back to phone number
+        let matchedAcc = null;
+        if (msg.requestedAccountName) {
+          const reqName = msg.requestedAccountName.toLowerCase();
+          matchedAcc = accounts.find(a => (a.acName || a.name || '').toLowerCase().includes(reqName) || (a.acCode || '').toString() === reqName);
+        }
+        
+        if (!matchedAcc && msg.fromNumber) {
+          matchedAcc = accounts.find(a => a.mobileNo && a.mobileNo.includes(msg.fromNumber.substring(msg.fromNumber.length - 10)));
+        }
+        
+        if (matchedAcc) {
+          fillFromAccount(matchedAcc);
+        } else if (msg.requestedAccountName) {
+          // If a name was requested but not found, set it in the search box and open modal
+          setAccountSearch(msg.requestedAccountName);
+          setShowAccountModal(true);
+        }
+      } else {
+        alert("No pending WhatsApp orders found.");
+        setShowWaModal(false);
+      }
+    } catch (err) {
+      console.error(err);
+      alert("No pending WhatsApp orders found or server error.");
+      setShowWaModal(false);
+    }
+  };
+
+  const handleWaParse = () => {
+    if (!waText.trim()) return;
+    const lines = waText.split('\n');
+    const newItems = [];
+    lines.forEach(line => {
+      const match = line.trim().match(/^(\d+)\s*(.*)$/);
+      if (match) {
+        const qty = parseInt(match[1]);
+        const query = match[2].trim().toLowerCase();
+        if (!query) return;
+        const part = parts.find(p =>
+          (p.partNo && p.partNo.toLowerCase().includes(query)) ||
+          (p.description && p.description.toLowerCase().includes(query))
+        );
+        if (part) {
+          const list = formData.rateType === 'W'
+            ? parseFloat(part.wholesaleFinal || part.wholesalePrice || 0)
+            : parseFloat(part.retailFinal || part.retailPrice || 0);
+          newItems.push(calcRow({
+            brand: part.brand || '', partNo: part.partNo || '',
+            description: part.description || '', model: part.model || '',
+            stock: 0, ordQty: qty, list, dis: 0,
+            netSale: list, amount: list * qty,
+            netPur: parseFloat(part.purchaseFinal || part.purchasePrice || 0),
+            locnI: part.locationI || '', locnII: '',
+          }));
+        }
+      }
+    });
+    if (newItems.length > 0) {
+      setItems(prev => [...prev, ...newItems]);
+      setShowWaModal(false);
+      setWaText('');
+    } else {
+      alert('Could not match any parts from the provided text.');
+    }
+  };
+
+  const handleSendWa = () => {
+    if (!formData.partyCd && !formData.customerName) {
+      alert("Please select a customer first.");
+      return;
+    }
+    const acc = accounts.find(a => a.acCode?.toString() === formData.partyCd);
+    if (!acc || !acc.mobileNo) {
+      alert("Customer does not have a mobile number saved.");
+      return;
+    }
+    let text = `*Sales Order Acknowledgement:*\n*Date:* ${formData.orderDate}\n*Customer:* ${formData.customerName}\n\n*Items:*\n`;
+    items.forEach(i => {
+      text += `- ${i.ordQty} x ${i.description}\n`;
+    });
+    let phone = acc.mobileNo.replace(/\D/g, '');
+    if (phone.length === 10) phone = '91' + phone;
+    const url = `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
+    window.open(url, '_blank');
+  };
+
   const totalAmount = items.reduce((s, i) => s + (i.amount || 0), 0);
 
   // ── save ──────────────────────────────────────────────────────
@@ -157,6 +254,9 @@ export default function SalesOrderEntry({ order, onBack, onClose, prefilledAccou
       } else {
         const saved = await createSalesOrder(payload);
         if (saved && saved.id) setSavedOrderId(saved.id);
+        if (pendingWaMsgId) {
+          await markWhatsappProcessed(pendingWaMsgId);
+        }
       }
       setShowPrintDialog(true);
     } catch (err) { console.error('Save failed', err); }
@@ -359,6 +459,7 @@ export default function SalesOrderEntry({ order, onBack, onClose, prefilledAccou
 
           {[
             ['ADD', () => setShowModal(true)],
+            ['WA QUICK ORDER', () => { setShowWaModal(true); fetchWaMessage(); }],
             ['DELETE', () => { if (selectedItemIndex !== null) removeItem(selectedItemIndex); }],
             ['CALCI', null],
             ['TOTAL', null],
@@ -369,17 +470,20 @@ export default function SalesOrderEntry({ order, onBack, onClose, prefilledAccou
             ['SMART ADD', () => setShowModal(true)],
             ['EAST ADD', () => setShowModal(true)],
             ['ITEM FIND', null],
-          ].map(([label, handler]) => (
-            <button key={label} onClick={handler || undefined}
-              style={{
-                ...actionBtnStyle,
-                background: label === 'SMART ADD' ? '#ffffa0'
-                  : label === 'EAST ADD' ? '#e0ffe0'
-                    : '#e8e8e8',
-              }}>
-              {label}
-            </button>
-          ))}
+          ].map(([label, handler]) => {
+            let bg = label === 'SMART ADD' ? '#ffffa0'
+              : label === 'EAST ADD' ? '#e0ffe0'
+              : label === 'WA QUICK ORDER' ? '#25D366'
+              : '#e8e8e8';
+            let color = label === 'WA QUICK ORDER' ? 'white' : '#1d2d5a';
+            let borderColor = label === 'WA QUICK ORDER' ? '#128C7E' : '#7a9cbf';
+            return (
+              <button key={label} onClick={handler || undefined}
+                style={{ ...actionBtnStyle, background: bg, color, borderColor }}>
+                {label}
+              </button>
+            )
+          })}
         </div>
 
         {/* Items table */}
@@ -496,6 +600,10 @@ export default function SalesOrderEntry({ order, onBack, onClose, prefilledAccou
           boxShadow: '0 4px 10px rgba(0,0,0,0.2)', zIndex: 10,
         }}>
           <div style={{ display: 'flex', gap: '6px' }}>
+            <button onClick={handleSendWa}
+              style={{ ...topBtnStyle('#25D366', 'white'), padding: '6px 18px', borderColor: '#128C7E' }}>
+              SEND WA
+            </button>
             <button onClick={handleSave}
               style={{ ...topBtnStyle('#28a745', 'white'), padding: '6px 18px' }}>
               SAVE
@@ -613,6 +721,46 @@ export default function SalesOrderEntry({ order, onBack, onClose, prefilledAccou
               borderTop: '1px solid #9caab7', fontSize: '11px', color: '#555',
             }}>
               {filteredParts.length} item(s) — click row to add to order
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── WA QUICK ORDER MODAL ── */}
+      {showWaModal && (
+        <div style={overlayStyle}>
+          <div style={{ ...modalStyle, width: '500px' }}>
+            <div style={modalHeaderStyle}>
+              <span>QUICK WA ORDER</span>
+              <button onClick={() => setShowWaModal(false)} style={closeXStyle}>✕</button>
+            </div>
+            <div style={{ padding: '15px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <p style={{ margin: 0, fontSize: '12px', color: '#555' }}>
+                Paste WhatsApp order text below. Format expected: <strong>[Qty] [Part description/No]</strong> per line.<br/>
+                Example:<br/>
+                <em>5 oil filter<br/>2 brake pad</em>
+              </p>
+              <textarea 
+                value={waText} 
+                onChange={(e) => setWaText(e.target.value)} 
+                style={{ width: '100%', height: '150px', padding: '8px', border: '1px solid #7a9cbf', fontFamily: 'monospace', resize: 'vertical' }}
+                placeholder="5 PartName..."
+              />
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '5px' }}>
+                <button onClick={() => setShowWaModal(false)} style={topBtnStyle('#e8e8e8')}>CANCEL</button>
+                <button 
+                  onClick={async () => { 
+                    if (pendingWaMsgId) {
+                      await markWhatsappProcessed(pendingWaMsgId);
+                      setWaText('');
+                      setShowWaModal(false);
+                      alert('Message discarded.');
+                    }
+                  }} 
+                  style={topBtnStyle('#dc3545', 'white')}
+                >DISCARD MSG</button>
+                <button onClick={handleWaParse} style={topBtnStyle('#25D366', 'white')}>PROCESS ORDER</button>
+              </div>
             </div>
           </div>
         </div>

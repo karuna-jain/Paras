@@ -23,6 +23,8 @@ public class SalesOrder {
     private Double amount = 0.0;
     private boolean billed = false;
     private String billNo;
+    @Column(name = "is_return_bill")
+    private boolean isReturn = false;
 
     @OneToMany(
             mappedBy = "order",
