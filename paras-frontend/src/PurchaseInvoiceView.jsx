@@ -27,12 +27,13 @@ export default function PurchaseInvoiceView({ onExit }) {
 
   const handleDelete = async (e, id) => {
     e.stopPropagation();
-    if (!window.confirm("Are you sure?")) return;
+    if (!window.confirm("Are you sure you want to delete this purchase invoice?")) return;
     try {
       await deletePurchaseInvoice(id);
       loadInvoices();
     } catch (err) {
       console.error("Delete failed", err);
+      alert("Failed to delete purchase invoice");
     }
   };
 
@@ -45,73 +46,175 @@ export default function PurchaseInvoiceView({ onExit }) {
     );
   }
 
-  return (
-    <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        backgroundColor: '#ebf3ff',
-        padding: '10px 15px',
-        borderBottom: '3px solid #003399',
-        borderTop: '1px solid #003399'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{ backgroundColor: '#003399', padding: '6px', borderRadius: '4px' }}>
-            <FaFolderOpen size={20} color="white" />
-          </div>
-          <span style={{ fontWeight: 'bold', color: '#003399', fontSize: '1.2rem' }}>PURCHASES</span>
-        </div>
+  // Classic Windows 98/XP styles
+  const outerContainerStyle = {
+    width: '100%',
+    height: '100%',
+    display: 'flex',
+    flexDirection: 'column',
+    background: '#d6dbe2',
+    fontFamily: 'Tahoma, sans-serif',
+    fontSize: '11px',
+    padding: '10px',
+  };
 
-        <div style={{ display: 'flex', gap: '10px' }}>
+  const titleBarStyle = {
+    height: '26px',
+    background: '#000080',
+    color: 'white',
+    display: 'flex',
+    alignItems: 'center',
+    padding: '0 8px',
+    fontWeight: 'bold',
+    justifyContent: 'space-between',
+    flexShrink: 0,
+  };
+
+  const actionBarStyle = {
+    background: '#e8e8e8',
+    border: '1px solid #808080',
+    padding: '6px',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: '4px',
+    flexShrink: 0,
+  };
+
+  const btnStyle = {
+    height: '24px',
+    background: '#e8e8e8',
+    color: '#000',
+    border: '1px solid #808080',
+    padding: '0 12px',
+    fontWeight: 'bold',
+    fontFamily: 'Tahoma, sans-serif',
+    fontSize: '11px',
+    cursor: 'pointer',
+    borderRadius: '0',
+    boxShadow: 'inset 1px 1px #fff, inset -1px -1px #a0a0a0',
+  };
+
+  return (
+    <div style={outerContainerStyle}>
+      {/* Title Bar */}
+      <div style={titleBarStyle}>
+        <span>PURCHASES INVOICES LIST</span>
+      </div>
+
+      {/* Action Bar */}
+      <div style={actionBarStyle}>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <FaFolderOpen size={14} color="#000080" />
+          <span style={{ fontWeight: 'bold' }}>MANAGE PURCHASES</span>
+        </div>
+        <div style={{ display: 'flex', gap: '6px' }}>
           <button
             onClick={() => { setSelectedInvoice(null); setViewMode('entry'); }}
-            style={{ backgroundColor: '#003399', color: 'white', border: '1px solid #000', padding: '6px 15px', fontWeight: 'bold', cursor: 'pointer' }}
+            style={btnStyle}
           >
-            ADD PURCHASE
+            <u>A</u>DD PURCHASE
           </button>
-          <button onClick={onExit} style={{ backgroundColor: '#f0f0f0', color: '#cc0000', border: '1px solid #cc0000', padding: '6px 15px', fontWeight: 'bold', cursor: 'pointer' }}>
-            RETURN
+          <button onClick={onExit} style={{ ...btnStyle, color: '#cc0000' }}>
+            <u>R</u>ETURN
           </button>
         </div>
       </div>
 
-      <div style={{ flex: 1, overflow: 'hidden', padding: '10px' }}>
-        {loading ? (
-          <p style={{ padding: '1rem' }}>Loading...</p>
-        ) : invoices.length === 0 ? (
-          <p style={{ padding: '1rem', color: '#666' }}>No records found.</p>
-        ) : (
-          <div className="data-table-container" style={{ border: '1px solid #003399' }}>
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>SUPPLIER NAME</th>
-                  <th style={{ textAlign: 'right' }}>AMOUNT</th>
-                  <th>CITY</th>
-                  <th>DATE</th>
-                  <th>INVOICE NO</th>
-                  <th style={{ textAlign: 'center' }}>ACT</th>
-                </tr>
-              </thead>
+      {/* Grid Table */}
+      <div style={{ flex: 1, background: '#fff', border: '1px solid #808080', marginTop: '4px', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        <div style={{ overflowY: 'scroll', background: '#e8e8e8', borderBottom: '1px solid #808080', flexShrink: 0 }}>
+          <table style={{ width: '100%', tableLayout: 'fixed', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr>
+                <th style={thStyle(100)}>INVOICE NO</th>
+                <th style={thStyle(90)}>BILL DATE</th>
+                <th style={thStyle(250)}>SUPPLIER NAME</th>
+                <th style={thStyle(100)}>CITY</th>
+                <th style={thStyle(70)}>TYPE</th>
+                <th style={thStyle(110)}>NET AMOUNT</th>
+                <th style={thStyle(40)}>ACT</th>
+              </tr>
+            </thead>
+          </table>
+        </div>
+
+        <div style={{ flex: 1, overflowY: 'auto' }}>
+          {loading ? (
+            <div style={{ padding: '20px', textAlign: 'center' }}>Loading purchases...</div>
+          ) : invoices.length === 0 ? (
+            <div style={{ padding: '20px', textAlign: 'center', color: '#666' }}>No purchase records found.</div>
+          ) : (
+            <table style={{ width: '100%', tableLayout: 'fixed', borderCollapse: 'collapse' }}>
               <tbody>
                 {invoices.map((inv, idx) => (
-                  <tr key={inv.id} style={{ backgroundColor: idx % 2 === 0 ? '#fff' : '#f2f7ff' }}>
-                    <td><strong>{inv.supplierName}</strong></td>
-                    <td style={{ textAlign: 'right', fontWeight: 'bold', color: '#003399' }}>{inv.amount?.toFixed(2) || '0.00'}</td>
-                    <td>{inv.city || ''}</td>
-                    <td>{inv.invoiceDate || ''}</td>
-                    <td>{inv.supplierInvoiceNo || ''}</td>
-                    <td style={{ textAlign: 'center' }}>
-                      <button onClick={(e) => handleDelete(e, inv.id)} style={{ color: 'red', fontWeight: 'bold', background: 'none', border: 'none', cursor: 'pointer' }}>×</button>
+                  <tr
+                    key={inv.id}
+                    style={{
+                      background: idx % 2 === 0 ? '#fff' : '#f5f5f5',
+                      borderBottom: '1px solid #e0e0e0',
+                    }}
+                  >
+                    <td style={tdStyle(100, 'center')}><strong>{inv.billNo}</strong></td>
+                    <td style={tdStyle(90, 'center')}>{inv.billDate}</td>
+                    <td style={tdStyle(250)}>{inv.supplierName}</td>
+                    <td style={tdStyle(100)}>{inv.city || ''}</td>
+                    <td style={tdStyle(70, 'center')}>{inv.type || 'CREDIT'}</td>
+                    <td style={tdStyle(110, 'right', true)}>{inv.netAmount?.toFixed(2) || '0.00'}</td>
+                    <td style={tdStyle(40, 'center')}>
+                      <button
+                        onClick={(e) => handleDelete(e, inv.id)}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: '#cc0000',
+                          fontWeight: 'bold',
+                          cursor: 'pointer',
+                          padding: 0
+                        }}
+                        title="Delete Invoice"
+                      >
+                        ✕
+                      </button>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );
+}
+
+function thStyle(width) {
+  return {
+    width: width ? `${width}px` : 'auto',
+    padding: '5px 8px',
+    textAlign: 'left',
+    background: '#e8e8e8',
+    borderRight: '1px solid #808080',
+    fontWeight: 'bold',
+    fontSize: '11px',
+    color: '#000',
+    position: 'sticky',
+    top: 0,
+    boxShadow: 'inset 1px 1px #fff, inset -1px -1px #a0a0a0',
+  };
+}
+
+function tdStyle(width, align = 'left', bold = false) {
+  return {
+    width: width ? `${width}px` : 'auto',
+    padding: '5px 8px',
+    textAlign: align,
+    borderRight: '1px solid #e0e0e0',
+    fontSize: '11px',
+    fontWeight: bold ? 'bold' : 'normal',
+    color: bold ? '#000080' : '#000',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+  };
 }

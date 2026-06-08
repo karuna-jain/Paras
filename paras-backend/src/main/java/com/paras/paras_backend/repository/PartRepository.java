@@ -12,6 +12,7 @@ public interface PartRepository extends JpaRepository<Part, Long> {
     List<Part> findByBrandIgnoreCase(String brand);
 
     // Search by part number
+    java.util.Optional<Part> findByPartNo(String partNo);
     List<Part> findByPartNoContainingIgnoreCase(String partNo);
 
     // Search by description

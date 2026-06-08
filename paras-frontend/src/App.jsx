@@ -30,6 +30,9 @@ import PurchaseOrderView from './PurchaseOrderView'
 import QueryView from './QueryView'
 import SetupView from './SetupView'
 import LedgerQuery from './LedgerQuery'
+import AcBalanceEntry from './AcBalanceEntry'
+import DisplayPriceList from './DisplayPriceList'
+import { useEffect } from 'react'
 
 
 const menuItemStyle = {
@@ -60,6 +63,27 @@ function App() {
   const [activeDropdown, setActiveDropdown] = useState(null)
   const [activeTab, setActiveTab] = useState('home')
   const [prefilledData, setPrefilledData] = useState(null);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'F5') {
+        e.preventDefault();
+        setActiveTab('city-master');
+      } else if (e.key === 'F6') {
+        e.preventDefault();
+        setActiveTab('parts');
+      } else if (e.key === 'F7') {
+        e.preventDefault();
+        setActiveTab('accounts');
+      } else if (e.key === 'Escape') {
+        if (activeTab !== 'home') {
+          setActiveTab('home');
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [activeTab]);
 
   const renderHome = () => (
     <div
@@ -163,7 +187,10 @@ function App() {
         activeTab !== 'user-permissions' &&
         activeTab !== 'accounts' &&
         activeTab !== 'ledger-query' &&
-        activeTab !== 'pick-slip-report' && (
+        activeTab !== 'pick-slip-report' &&
+        activeTab !== 'ac-balance' &&
+        activeTab !== 'price-list' &&
+        activeTab !== 'city-master' && (
 
           <>
             {/* TOP MENU */}
@@ -450,7 +477,7 @@ function App() {
         style={{
           width: '100%',
           height:
-            activeTab === 'sales-orders' || activeTab === 'accounts' || activeTab === 'quotation' || activeTab === 'purchase-orders' || activeTab === 'pick-slip-report' || activeTab === 'ledger-query'
+            activeTab !== 'home'
               ? '100vh'
               : 'calc(100vh - 118px)',
           overflow: 'hidden',
@@ -553,6 +580,15 @@ function App() {
             {activeTab === 'user-permissions' && (
               <SetupView title="User Permissions" onExit={() => setActiveTab('home')} />
             )}
+            {activeTab === 'ac-balance' && (
+              <AcBalanceEntry onExit={() => setActiveTab('home')} />
+            )}
+            {activeTab === 'price-list' && (
+              <DisplayPriceList onExit={() => setActiveTab('home')} />
+            )}
+            {activeTab === 'city-master' && (
+              <SetupView title="City Master" onExit={() => setActiveTab('home')} />
+            )}
           </>
         )}
       </main>
@@ -576,11 +612,11 @@ function ToolbarButton({
         width: '76px',
         height: '76px',
         border: active
-          ? '1px solid #3f6fff'
-          : '1px solid #bcc6d2',
+          ? '1px solid #000080'
+          : '1px solid #808080',
         background: active
-          ? '#e8f0ff'
-          : '#f4f5f7',
+          ? '#cfe8ff'
+          : '#e8e8e8',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -588,12 +624,15 @@ function ToolbarButton({
         gap: '6px',
         cursor: 'pointer',
         color: danger
-          ? '#e11d48'
-          : '#1d2f5c',
-        fontSize: '12px',
-        borderRadius: '6px',
-        boxShadow:
-          '0 1px 2px rgba(0,0,0,0.08)'
+          ? '#cc0000'
+          : '#000',
+        fontSize: '11px',
+        fontWeight: 'bold',
+        fontFamily: 'Tahoma, sans-serif',
+        borderRadius: '0',
+        boxShadow: active
+          ? 'inset -1px -1px #fff, inset 1px 1px #808080'
+          : 'inset 1px 1px #fff, inset -1px -1px #a0a0a0',
       }}
     >
 

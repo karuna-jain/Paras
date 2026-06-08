@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { getSalesOrders, createSalesOrder, deleteSalesOrder, getAccounts } from './api';
-import { FaShoppingCart } from 'react-icons/fa';
+import { getSalesOrders, deleteSalesOrder, getAccounts } from './api';
+import { FaShoppingCart, FaQuestionCircle } from 'react-icons/fa';
 import SalesOrderEntry from './SalesOrderEntry';
 
 export default function SalesOrderView({ onExit, reportMode = false, onCreateBill }) {
@@ -9,14 +9,17 @@ export default function SalesOrderView({ onExit, reportMode = false, onCreateBil
   const [viewMode, setViewMode] = useState('list');
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [selectedIndex, setSelectedIndex] = useState(null);
+  
   const [showAccountModal, setShowAccountModal] = useState(false);
+  const [showTotalModal, setShowTotalModal] = useState(false);
+  
   const [accounts, setAccounts] = useState([]);
   const [accountSearch, setAccountSearch] = useState('');
   const [prefilledAccount, setPrefilledAccount] = useState(null);
 
   const loadOrders = async () => {
     try {
-      const data = await getSalesOrders(false); // Only fetch unbilled (pick slip not created)
+      const data = await getSalesOrders(false); // unbilled
       setOrders(data);
     } catch (err) {
       console.error('Failed to load orders', err);
@@ -32,16 +35,31 @@ export default function SalesOrderView({ onExit, reportMode = false, onCreateBil
     }
   }, [reportMode]);
 
-  const handleDeleteSelected = () => {
+  // Keyboard navigation for Enter to select highlighted row
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (viewMode === 'list' && e.key === 'Enter' && selectedIndex !== null) {
+        handleRowClick(orders[selectedIndex], selectedIndex);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [viewMode, selectedIndex, orders]);
+
+  const handleDeleteSelected = async () => {
     if (selectedIndex === null) {
       alert('Please select an order to delete');
       return;
     }
     const order = orders[selectedIndex];
-    if (!window.confirm(`Delete order for ${order.customerName}?`)) return;
-    deleteSalesOrder(order.id)
-      .then(() => { loadOrders(); setSelectedIndex(null); })
-      .catch(err => console.error('Failed to delete', err));
+    // No confirmation dialog (direct delete matching the desktop)
+    try {
+      await deleteSalesOrder(order.id);
+      loadOrders();
+      setSelectedIndex(null);
+    } catch (err) {
+      console.error('Failed to delete', err);
+    }
   };
 
   const handleRowClick = (order, index) => {
@@ -60,6 +78,8 @@ export default function SalesOrderView({ onExit, reportMode = false, onCreateBil
     setSelectedOrder(null);
     setViewMode('entry');
   };
+
+  const totalSum = orders.reduce((s, o) => s + (o.amount || 0), 0);
 
   const filteredAccounts = accounts.filter(a =>
     (a.acName || a.name || '').toLowerCase().includes(accountSearch.toLowerCase()) ||
@@ -85,6 +105,24 @@ export default function SalesOrderView({ onExit, reportMode = false, onCreateBil
     );
   }
 
+  // Windows standard button style
+  const btnStyle = (extra = {}) => ({
+    background: '#e8e8e8',
+    color: '#1d2d5a',
+    border: '1px solid #999',
+    height: '28px',
+    padding: '4px 12px',
+    borderRadius: 0,
+    fontFamily: 'Tahoma, Verdana, sans-serif',
+    fontWeight: 'bold',
+    fontSize: '11px',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...extra
+  });
+
   return (
     <div style={{
       width: '100%',
@@ -93,7 +131,7 @@ export default function SalesOrderView({ onExit, reportMode = false, onCreateBil
       flexDirection: 'column',
       background: '#dfe8ef',
       fontFamily: 'Tahoma, Verdana, sans-serif',
-      fontSize: '12px',
+      fontSize: '11px',
       color: '#1d2d5a',
       overflow: 'hidden'
     }}>
@@ -111,7 +149,7 @@ export default function SalesOrderView({ onExit, reportMode = false, onCreateBil
         flexShrink: 0
       }}>
         <span>{reportMode ? 'Pick Slip Report' : 'S.Orders'}</span>
-        <span>05-05-2026 (TUESDAY)</span>
+        <span>21-05-2026 (THURSDAY)</span>
         <span>PARAS AUTO PARTS</span>
         <span>(OPER)</span>
       </div>
@@ -120,10 +158,10 @@ export default function SalesOrderView({ onExit, reportMode = false, onCreateBil
       <div style={{
         background: '#c5dcf0',
         borderBottom: '2px solid #4a6fa5',
-        padding: '8px 12px',
+        padding: '6px 12px',
         display: 'flex',
         alignItems: 'center',
-        gap: '10px',
+        gap: '8px',
         flexShrink: 0
       }}>
         {/* Icon + Title */}
@@ -135,18 +173,16 @@ export default function SalesOrderView({ onExit, reportMode = false, onCreateBil
         }}>
           <div style={{
             background: '#003399',
-            padding: '5px 7px',
-            borderRadius: '3px',
+            padding: '4px 6px',
             display: 'flex',
             alignItems: 'center'
           }}>
-            <FaShoppingCart size={16} color="white" />
+            <FaShoppingCart size={14} color="white" />
           </div>
           <span style={{
             fontWeight: 'bold',
             color: '#003399',
-            fontSize: '13px',
-            letterSpacing: '0.5px'
+            fontSize: '13px'
           }}>
             {reportMode ? 'Pick Slip Report (Pending Sales Orders)' : 'Press <Enter> To Select Sales Order'}
           </span>
@@ -157,16 +193,16 @@ export default function SalesOrderView({ onExit, reportMode = false, onCreateBil
           <>
             <button
               onClick={handleAddNew}
-              style={btnStyle('#003399', 'white')}
+              style={btnStyle({ background: '#003399', color: 'white', border: '1px solid #002266' })}
             >
-              ADD NEW S.ORDER
+              <u>A</u>DD NEW S.ORDER
             </button>
 
             <button
               onClick={handleDeleteSelected}
-              style={btnStyle('#cc2200', 'white')}
+              style={btnStyle({ background: '#cc2200', color: 'white', border: '2px solid #990000' })}
             >
-              DELETE S.ORDER
+              <u>D</u>ELETE S.ORDER
             </button>
           </>
         )}
@@ -174,19 +210,19 @@ export default function SalesOrderView({ onExit, reportMode = false, onCreateBil
         {reportMode && (
           <button
             onClick={() => window.print()}
-            style={btnStyle('#28a745', 'white')}
+            style={btnStyle({ background: '#28a745', color: 'white', border: '1px solid #1e5c2f' })}
           >
             PRINT PICK SLIP
           </button>
         )}
 
-        <button style={btnStyle('#e8e8e8', '#1d2d5a')}>
+        <button onClick={() => setShowTotalModal(true)} style={btnStyle()}>
           TOTAL
         </button>
 
         <button
           onClick={onExit}
-          style={{ ...btnStyle('#e8e8e8', '#cc0000'), marginLeft: 'auto' }}
+          style={btnStyle({ background: '#f4a0a0', color: '#880000', border: '1px solid #aa6666', marginLeft: 'auto' })}
         >
           RETURN
         </button>
@@ -197,10 +233,10 @@ export default function SalesOrderView({ onExit, reportMode = false, onCreateBil
         <div style={overlayStyle}>
           <div style={{ ...modalStyle, width: '600px' }}>
             <div style={modalHeaderStyle}>
-              <span>SELECT ACCOUNT FOR NEW ORDER</span>
+              <span>SEARCH ACCOUNT    PRESS ENTER TO SELECT ACCOUNT</span>
               <button onClick={() => setShowAccountModal(false)} style={closeXStyle}>✕</button>
             </div>
-            <div style={{ padding: '8px 10px', background: '#eef3f7' }}>
+            <div style={{ padding: '8px 10px', background: '#cfe8ff', borderBottom: '1px solid #999' }}>
               <input
                 autoFocus
                 placeholder="Search account by name, city or code..."
@@ -209,13 +245,13 @@ export default function SalesOrderView({ onExit, reportMode = false, onCreateBil
                 style={inputStyle}
               />
             </div>
-            <div style={{ height: '350px', overflow: 'auto' }}>
+            <div style={{ height: '350px', overflow: 'auto', background: 'white' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead style={{ position: 'sticky', top: 0, background: '#c5dcf0' }}>
-                  <tr>
-                    <th style={{ ...tdStyle(), width: '60%' }}>Name</th>
-                    <th style={{ ...tdStyle(), width: '20%' }}>City</th>
-                    <th style={{ ...tdStyle(), width: '20%' }}>Code</th>
+                  <tr style={{ borderBottom: '1px solid #999' }}>
+                    <th style={{ ...tdStyle(), width: '60%', fontWeight: 'bold' }}>achead</th>
+                    <th style={{ ...tdStyle(), width: '20%', fontWeight: 'bold' }}>accity</th>
+                    <th style={{ ...tdStyle(), width: '20%', fontWeight: 'bold' }}>accode</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -224,10 +260,12 @@ export default function SalesOrderView({ onExit, reportMode = false, onCreateBil
                       key={idx}
                       onClick={() => selectAccountForOrder(a)}
                       style={{ cursor: 'pointer', background: idx % 2 === 0 ? '#fff' : '#f0f8ff', borderBottom: '1px solid #eee' }}
+                      onMouseEnter={e => e.currentTarget.style.background = '#dbeeff'}
+                      onMouseLeave={e => e.currentTarget.style.background = idx % 2 === 0 ? '#fff' : '#f0f8ff'}
                     >
                       <td style={tdStyle()}>{a.acName || a.name}</td>
                       <td style={tdStyle()}>{a.city}</td>
-                      <td style={tdStyle('right', true)}>{a.acCode}</td>
+                      <td style={tdStyle('right')}>{a.acCode}</td>
                     </tr>
                   ))}
                   {filteredAccounts.length === 0 && (
@@ -240,11 +278,38 @@ export default function SalesOrderView({ onExit, reportMode = false, onCreateBil
         </div>
       )}
 
+      {/* ── TOTAL SUM MODAL ── */}
+      {showTotalModal && (
+        <div style={overlayStyle}>
+          <div style={{ ...modalStyle, width: '300px' }}>
+            <div style={modalHeaderStyle}>
+              <span>TOTAL</span>
+              <button onClick={() => setShowTotalModal(false)} style={closeXStyle}>✕</button>
+            </div>
+            <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #ccc', paddingBottom: '4px' }}>
+                <span style={{ fontWeight: 'bold' }}>Total Orders:</span>
+                <span>{orders.length}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #ccc', paddingBottom: '4px' }}>
+                <span style={{ fontWeight: 'bold' }}>Total Amount:</span>
+                <span style={{ color: '#003399', fontWeight: 'bold' }}>Rs. {totalSum.toFixed(2)}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '10px' }}>
+                <button onClick={() => setShowTotalModal(false)} style={btnStyle()}>
+                  OK
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ── TABLE AREA ── */}
       <div style={{
         flex: 1,
         overflow: 'hidden',
-        padding: '8px',
+        padding: '6px',
         display: 'flex',
         flexDirection: 'column'
       }}>
@@ -253,7 +318,6 @@ export default function SalesOrderView({ onExit, reportMode = false, onCreateBil
           border: '1px solid #7a9cbf',
           overflow: 'auto',
           background: 'white',
-          boxShadow: '1px 1px 4px rgba(0,0,0,0.12)'
         }}>
           {loading ? (
             <div style={{ padding: '20px', color: '#666', textAlign: 'center' }}>
@@ -267,7 +331,7 @@ export default function SalesOrderView({ onExit, reportMode = false, onCreateBil
             <table style={{
               width: '100%',
               borderCollapse: 'collapse',
-              fontSize: '12px',
+              fontSize: '11px',
               fontFamily: 'Tahoma, Verdana, sans-serif'
             }}>
               <thead>
@@ -328,14 +392,14 @@ export default function SalesOrderView({ onExit, reportMode = false, onCreateBil
                       {o.customerName}
                     </td>
                     <td style={{ ...tdStyle('right'), color: '#003399', fontWeight: 'bold' }}>
-                      {o.amount != null ? o.amount.toFixed(2) : '0'}
+                      {o.amount != null ? o.amount.toFixed(2) : '0.00'}
                     </td>
                     <td style={tdStyle('left')}>{o.city || ''}</td>
                     <td style={tdStyle('left')}>
                       {o.orderDate ? (() => {
                         const parts = o.orderDate.split('-');
                         if (parts.length === 3) {
-                          return `${parts[2]}-${parts[1]}-${parts[0].slice(2)}`;
+                          return `${parts[2]}-${parts[1]}-${parts[0]}`;
                         }
                         return o.orderDate;
                       })() : ''}
@@ -353,7 +417,7 @@ export default function SalesOrderView({ onExit, reportMode = false, onCreateBil
         <div style={{
           marginTop: '4px',
           fontSize: '11px',
-          color: '#4a6a8a',
+          color: '#555',
           paddingLeft: '4px'
         }}>
           {orders.length} order(s)
@@ -365,29 +429,11 @@ export default function SalesOrderView({ onExit, reportMode = false, onCreateBil
   );
 }
 
-// ── Style helpers ────────────────────────────────────────────────
-function btnStyle(bg, color) {
-  return {
-    background: bg,
-    color: color,
-    border: `1px solid ${color === 'white' ? '#00000044' : '#8899aa'}`,
-    padding: '5px 14px',
-    fontWeight: 'bold',
-    fontSize: '11px',
-    fontFamily: 'Tahoma, Verdana, sans-serif',
-    cursor: 'pointer',
-    borderRadius: '2px',
-    boxShadow: '1px 1px 2px rgba(0,0,0,0.2)',
-    whiteSpace: 'nowrap',
-    letterSpacing: '0.3px'
-  };
-}
-
 const overlayStyle = { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000 };
-const modalStyle = { background: 'white', border: '2px solid #1d2d5a', display: 'flex', flexDirection: 'column', maxHeight: '90vh', overflow: 'hidden' };
+const modalStyle = { background: 'white', border: '2px solid #1d2d5a', display: 'flex', flexDirection: 'column', maxHeight: '90vh', overflow: 'hidden', fontFamily: 'Tahoma,sans-serif', fontSize: '11px' };
 const modalHeaderStyle = { background: '#1d2d5a', color: 'white', padding: '6px 10px', fontWeight: 'bold', display: 'flex', justifyContent: 'space-between', alignItems: 'center' };
 const closeXStyle = { background: 'none', border: 'none', color: 'white', cursor: 'pointer', fontWeight: 'bold', fontSize: '14px' };
-const inputStyle = { height: '24px', border: '1px solid #7a9cbf', background: 'white', padding: '0 4px', fontSize: '12px', fontFamily: 'Tahoma,sans-serif', width: '100%' };
+const inputStyle = { height: '22px', border: '1px solid #999', background: 'white', padding: '0 4px', fontSize: '11px', fontFamily: 'Tahoma,sans-serif', width: '100%', borderRadius: 0 };
 
 function tdStyle(align = 'left', bold = false) {
   return {
