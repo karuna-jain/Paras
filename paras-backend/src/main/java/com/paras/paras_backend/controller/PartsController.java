@@ -32,6 +32,19 @@ public class PartsController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    // ── GET Price List ────────────────────────────────────────────────
+    @GetMapping("/price-list")
+    public List<Part> getPriceList(
+            @RequestParam(defaultValue = "ALL") String brand,
+            @RequestParam(defaultValue = "ALL") String model) {
+        
+        List<Part> allParts = partRepository.findAll();
+        return allParts.stream()
+                .filter(p -> "ALL".equalsIgnoreCase(brand) || (p.getBrand() != null && p.getBrand().equalsIgnoreCase(brand)))
+                .filter(p -> "ALL".equalsIgnoreCase(model) || (p.getModel() != null && p.getModel().toLowerCase().contains(model.toLowerCase())))
+                .toList();
+    }
+
     // ── POST — add new part ───────────────────────────────────────────
     @PostMapping
     public ResponseEntity<Part> addPart(@RequestBody Part part) {

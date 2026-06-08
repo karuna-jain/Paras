@@ -155,12 +155,10 @@ export default function PickSlipPrintView({ formData, items, totalAmount, onBack
         ))}
       </div>
 
-      {/* Challan Print Area */}
-      <div ref={printAreaRef} className="print-area" style={{
-        padding: '20px', maxWidth: '900px', margin: '0 auto',
-        width: '100%', color: 'black', fontFamily: "'Segoe UI', Arial, sans-serif",
-        display: 'flex', flexDirection: 'column', minHeight: '100vh', boxSizing: 'border-box'
-      }}>
+        {/* ── REPORT TITLE ── */}
+        <div style={{ textAlign: 'center', fontSize: '16px', fontWeight: 'bold', textDecoration: 'underline', marginBottom: '10px' }}>
+          PENDING ORDER (WITH S.RATE)
+        </div>
 
         {/* ── PARTY INFO ── */}
         <div style={{
@@ -169,35 +167,25 @@ export default function PickSlipPrintView({ formData, items, totalAmount, onBack
           borderBottom: '2px solid #000', marginBottom: '4px'
         }}>
           <div style={{ lineHeight: '1.8' }}>
-            <span style={{ fontWeight: 'bold' }}>TRANSPORT: </span>{formData.transport || '—'}<br />
-            <span style={{ fontWeight: 'bold' }}>ADDRESS: </span>{formData.address || '—'}<br />
             <span style={{ fontWeight: 'bold' }}>NAME: </span>{formData.customerName || '—'}<br />
+            <span style={{ fontWeight: 'bold' }}>ADDRESS: </span>{formData.address || '—'}<br />
             <span style={{ fontWeight: 'bold' }}>CITY: </span>{formData.city || '—'}
           </div>
           <div style={{ textAlign: 'right', lineHeight: '1.8' }}>
-            <span style={{ fontWeight: 'bold' }}>SR: </span>{formData.partyCd || '—'}<br />
             <span style={{ fontWeight: 'bold' }}>DATE: </span>{formData.orderDate || '—'}<br />
             <span style={{ fontWeight: 'bold' }}>PHONE: </span>{formData.phone || formData.cellNo || '—'}<br />
             <span style={{ fontWeight: 'bold' }}>PAGE: </span>1
           </div>
         </div>
 
-        {/* ── NOTICE ── */}
-        <div style={{
-          padding: '3px 0', fontSize: '11.5px', fontStyle: 'italic', color: '#555',
-          marginBottom: '8px'
-        }}>
-          The following goods of your order are ready. Please confirm the rates &amp; Qty. immediately.
-        </div>
-
         {/* ── ITEMS TABLE ── */}
         <table style={{ width: '100%', borderCollapse: 'collapse', borderTop: '1px solid #ccc' }}>
           <thead>
             <tr>
-              {['SR', 'BRAND', 'PART NO', 'QTY', 'DESCRIPTION', 'MODEL', 'MRP', 'PERC', 'NET AMOUNT'].map((h) => (
+              {['SR', 'BRAND', 'PART NO', 'QTY', 'DESCRIPTION', 'MODEL', 'LIST', 'DISC', 'N.RATE', 'AMOUNT'].map((h) => (
                 <th key={h} style={thStyle({
-                  textAlign: ['QTY', 'MRP', 'PERC', 'NET AMOUNT'].includes(h) ? 'right' : 'left',
-                  width: h === 'SR' ? '30px' : h === 'QTY' ? '40px' : h === 'NET AMOUNT' ? '90px' : 'auto'
+                  textAlign: ['QTY', 'LIST', 'DISC', 'N.RATE', 'AMOUNT'].includes(h) ? 'right' : 'left',
+                  width: h === 'SR' ? '30px' : h === 'QTY' ? '40px' : h === 'AMOUNT' ? '90px' : 'auto'
                 })}>{h}</th>
               ))}
             </tr>
@@ -209,7 +197,7 @@ export default function PickSlipPrintView({ formData, items, totalAmount, onBack
                 <>
                   {/* Category Header Row */}
                   <tr key={`cat-${group.category}`}>
-                    <td colSpan={8} style={{
+                    <td colSpan={10} style={{
                       ...cellStyle(), fontWeight: 'bold', fontStyle: 'italic',
                       color: '#333', borderBottom: '1px solid #ddd',
                       fontSize: '11.5px', paddingTop: '8px'
@@ -221,29 +209,19 @@ export default function PickSlipPrintView({ formData, items, totalAmount, onBack
                   {/* Items */}
                   {group.items.map((item, idx) => (
                     <tr key={idx}>
-                      <td style={cellStyle({ textAlign: 'center' })}>{item.srNo || idx + 1}</td>
+                      <td style={cellStyle({ textAlign: 'center' })}>{idx + 1}</td>
+                      <td style={cellStyle()}>{item.brand}</td>
                       <td style={cellStyle()}>{item.partNo}</td>
-                      <td style={cellStyle({ textAlign: 'right' })}>{item.qty}</td>
+                      <td style={cellStyle({ textAlign: 'right' })}>{item.qty || item.ordQty}</td>
                       <td style={cellStyle()}>{item.description}</td>
                       <td style={cellStyle()}>{item.model || 'COMMON'}</td>
-                      <td style={cellStyle({ textAlign: 'right' })}>{Number(item.mrp || item.rate || 0).toFixed(2)}</td>
-                      <td style={cellStyle({ textAlign: 'right' })}>{Number(item.perc || item.rate || 0).toFixed(3)}</td>
+                      <td style={cellStyle({ textAlign: 'right' })}>{Number(item.list || 0).toFixed(2)}</td>
+                      <td style={cellStyle({ textAlign: 'right' })}>{Number(item.dis || 0).toFixed(1)}%</td>
+                      <td style={cellStyle({ textAlign: 'right' })}>{Number(item.netSale || 0).toFixed(2)}</td>
                       <td style={cellStyle({ textAlign: 'right' })}>{Number(item.amount || 0).toFixed(2)}</td>
                     </tr>
                   ))}
-
-                  {/* Category Subtotal */}
-                  <tr key={`sub-${group.category}`}>
-                    <td colSpan={8} style={{
-                      ...cellStyle(), textAlign: 'right',
-                      fontSize: '11px', color: '#666',
-                      borderBottom: '1px solid #bbb', paddingRight: '8px',
-                      fontStyle: 'italic'
-                    }}>
-                      LV {groupTotal.toFixed(2)}&nbsp;&nbsp;&nbsp;NV {groupTotal.toFixed(2)}
-                    </td>
-                  </tr>
-                </>
+                </tbody>
               );
             })}
 
