@@ -190,7 +190,10 @@ function App() {
         activeTab !== 'pick-slip-report' &&
         activeTab !== 'ac-balance' &&
         activeTab !== 'price-list' &&
-        activeTab !== 'city-master' && (
+        activeTab !== 'city-master' &&
+        activeTab !== 'purchases' &&
+        activeTab !== 'purch-report' &&
+        activeTab !== 'sales-report' && (
 
           <>
             {/* TOP MENU */}
