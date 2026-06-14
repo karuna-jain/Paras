@@ -8,13 +8,13 @@ import com.paras.paras_backend.repository.AccountLedgerRepository;
 import com.paras.paras_backend.repository.AccountBalanceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import java.math.BigDecimal;
 
 import java.util.List;
 import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/ledger")
-@CrossOrigin("*")
 public class LedgerController {
 
     @Autowired
@@ -70,10 +70,11 @@ public class LedgerController {
                 
                 List<AccountLedger> txs = ledgerRepository.findByAcCodeOrderByDateAscIdAsc(opening.getAcCode());
                 for (AccountLedger tx : txs) {
+                    BigDecimal txAmt = tx.getAmount() != null ? tx.getAmount() : BigDecimal.ZERO;
                     if ("D".equalsIgnoreCase(tx.getDc())) {
-                        currentBal += tx.getAmount();
+                        currentBal += txAmt.doubleValue();
                     } else {
-                        currentBal -= tx.getAmount();
+                        currentBal -= txAmt.doubleValue();
                     }
                 }
                 account.setBalance(currentBal);
@@ -96,15 +97,16 @@ public class LedgerController {
         return balanceRepository.findByAcCode(acCode).orElse(new AccountBalance());
     }
 
-    private void updateBalance(String acCodeStr, Double amount, String dc) {
+    private void updateBalance(String acCodeStr, BigDecimal amount, String dc) {
         try {
             Integer acCode = Integer.parseInt(acCodeStr);
             accountRepository.findByAcCode(acCode).ifPresent(account -> {
-                double current = account.getBalance() != null ? account.getBalance() : 0.0;
+                BigDecimal current = account.getBalance() != null ? BigDecimal.valueOf(account.getBalance()) : BigDecimal.ZERO;
+                BigDecimal change = amount != null ? amount : BigDecimal.ZERO;
                 if ("D".equalsIgnoreCase(dc)) {
-                    account.setBalance(current + amount);
+                    account.setBalance(current.add(change).doubleValue());
                 } else {
-                    account.setBalance(current - amount);
+                    account.setBalance(current.subtract(change).doubleValue());
                 }
                 accountRepository.save(account);
             });

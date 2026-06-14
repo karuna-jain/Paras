@@ -3,6 +3,7 @@ package com.paras.paras_backend.model;
 import jakarta.persistence.*;
 import lombok.Data;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import java.math.BigDecimal;
 
 @Entity
 @Data
@@ -29,17 +30,17 @@ public class SaleBillItem {
     private Double qty = 0.0;
 
     @Column(name = "list_price")
-    private Double listPrice = 0.0;
+    private BigDecimal listPrice = BigDecimal.ZERO;
 
-    private Double discount = 0.0;
-    private Double rate = 0.0;
-    private Double amount = 0.0;
+    private BigDecimal discount = BigDecimal.ZERO;
+    private BigDecimal rate = BigDecimal.ZERO;
+    private BigDecimal amount = BigDecimal.ZERO;
 
     @Column(name = "n_pur")
-    private Double nPur = 0.0;
+    private BigDecimal nPur = BigDecimal.ZERO;
 
     private String hsn;
 
     @Column(name = "gst_percent")
-    private Double gstPercent = 0.0;
+    private BigDecimal gstPercent = BigDecimal.ZERO;
 }

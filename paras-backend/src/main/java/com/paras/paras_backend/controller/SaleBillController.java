@@ -8,13 +8,13 @@ import com.paras.paras_backend.repository.AccountLedgerRepository;
 import com.paras.paras_backend.repository.SalesOrderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import java.math.BigDecimal;
 
 import java.util.List;
 import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/sale-bills")
-@CrossOrigin("*")
 public class SaleBillController {
 
     @Autowired
@@ -129,8 +129,8 @@ public class SaleBillController {
             bill.setHammali(updatedBill.getHammali());
             
             // Adjust ledger if amount changed
-            double oldAmt = bill.getNetAmt();
-            double newAmt = updatedBill.getNetAmt();
+            BigDecimal oldAmt = bill.getNetAmt();
+            BigDecimal newAmt = updatedBill.getNetAmt();
             bill.setNetAmt(newAmt);
 
             bill.getItems().clear();
@@ -143,9 +143,9 @@ public class SaleBillController {
 
             SaleBill saved = saleBillRepository.save(bill);
 
-            if (bill.getAcNo() != null && !bill.getAcNo().isEmpty() && oldAmt != newAmt) {
+            if (bill.getAcNo() != null && !bill.getAcNo().isEmpty() && oldAmt.compareTo(newAmt) != 0) {
                 // Find ledger transaction and update it, or add adjustment
-                updateAccountBalance(bill.getAcNo(), newAmt - oldAmt, "D");
+                updateAccountBalance(bill.getAcNo(), newAmt.subtract(oldAmt), "D");
             }
 
             return saved;
@@ -171,15 +171,15 @@ public class SaleBillController {
         });
     }
 
-    private void updateAccountBalance(String acNoStr, Double amount, String dc) {
+    private void updateAccountBalance(String acNoStr, BigDecimal amount, String dc) {
         try {
             Integer acCode = Integer.parseInt(acNoStr);
             accountRepository.findByAcCode(acCode).ifPresent(account -> {
-                double current = account.getBalance() != null ? account.getBalance() : 0.0;
+                BigDecimal current = account.getBalance() != null ? BigDecimal.valueOf(account.getBalance()) : BigDecimal.ZERO;
                 if ("D".equalsIgnoreCase(dc)) {
-                    account.setBalance(current + amount);
+                    account.setBalance(current.add(amount).doubleValue());
                 } else {
-                    account.setBalance(current - amount);
+                    account.setBalance(current.subtract(amount).doubleValue());
                 }
                 accountRepository.save(account);
             });

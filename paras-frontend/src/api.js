@@ -8,6 +8,19 @@ const api = axios.create({
   },
 });
 
+api.interceptors.response.use(
+  response => response,
+  error => {
+    if (error.response?.status === 401) {
+      window.location.href = '/login';
+    }
+    if (error.response?.status >= 500) {
+      console.error('Server error:', error.response.data);
+    }
+    return Promise.reject(error);
+  }
+);
+
 export const getCustomers = () => api.get('/customers').then(res => res.data);
 export const createCustomer = (customer) => api.post('/customers', customer).then(res => res.data);
 export const deleteCustomer = (id) => api.delete(`/customers/${id}`);
@@ -46,11 +59,17 @@ export const updatePurchaseInvoice = (id, invoice) => api.put(`/purchases/${id}`
 export const deletePurchaseInvoice = (id) => api.delete(`/purchases/${id}`);
 export const getNextPurchaseNo = () => api.get('/purchases/next-no').then(res => res.data);
 
-export const getVouchers = () => api.get('/cb-vouchers').then(res => res.data);
+export const getVouchers = (type) => {
+  const query = type ? `?type=${type}` : '';
+  return api.get(`/cb-vouchers${query}`).then(res => res.data);
+};
 export const getVoucher = (id) => api.get(`/cb-vouchers/${id}`).then(res => res.data);
 export const createVoucher = (voucher) => api.post('/cb-vouchers', voucher).then(res => res.data);
 export const deleteVoucher = (id) => api.delete(`/cb-vouchers/${id}`);
-export const getNextVoucherNo = () => api.get('/cb-vouchers/next-no').then(res => res.data);
+export const getNextVoucherNo = (type) => {
+  const query = type ? `?type=${type}` : '';
+  return api.get(`/cb-vouchers/next-no${query}`).then(res => res.data);
+};
 
 export const postDebit = (ledger) => api.post('/ledger/debit', ledger).then(res => res.data);
 export const postCredit = (ledger) => api.post('/ledger/credit', ledger).then(res => res.data);

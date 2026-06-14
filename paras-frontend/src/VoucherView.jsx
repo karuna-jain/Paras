@@ -3,6 +3,7 @@ import { getVouchers, deleteVoucher } from './api';
 import { FaMoneyBillWave } from 'react-icons/fa';
 
 import VoucherEntry from './VoucherEntry';
+import Loading from './components/Loading';
 
 export default function VoucherView({ onExit, type = 'Cash/Bank' }) {
   const [vouchers, setVouchers] = useState([]);
@@ -12,9 +13,7 @@ export default function VoucherView({ onExit, type = 'Cash/Bank' }) {
 
   const loadVouchers = async () => {
     try {
-      const data = await getVouchers();
-      // Filter by type if needed, but since backend stores all, we display them all or we can filter.
-      // For now we display all vouchers.
+      const data = await getVouchers(type);
       setVouchers(data);
     } catch (err) {
       console.error("Failed to load vouchers", err);
@@ -43,6 +42,7 @@ export default function VoucherView({ onExit, type = 'Cash/Bank' }) {
     return (
       <VoucherEntry
         voucher={selectedVoucher}
+        type={type}
         onBack={() => { setViewMode('list'); loadVouchers(); }}
       />
     );
@@ -142,7 +142,7 @@ export default function VoucherView({ onExit, type = 'Cash/Bank' }) {
 
         <div style={{ flex: 1, overflowY: 'auto' }}>
           {loading ? (
-            <div style={{ padding: '20px', textAlign: 'center' }}>Loading vouchers...</div>
+            <Loading text="Loading vouchers..." />
           ) : vouchers.length === 0 ? (
             <div style={{ padding: '20px', textAlign: 'center', color: '#666' }}>No vouchers found.</div>
           ) : (

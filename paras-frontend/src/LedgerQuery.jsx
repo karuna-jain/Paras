@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getAccounts } from './api';
+import { getAccounts, getLedgerQuery, getLedgerOpening } from './api';
 
 export default function LedgerQuery({ onExit }) {
   const [view, setView] = useState('popup'); // 'popup', 'account_list', 'ledger_details'
@@ -9,6 +9,8 @@ export default function LedgerQuery({ onExit }) {
   const [filteredAccounts, setFilteredAccounts] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedAccount, setSelectedAccount] = useState(null);
+  const [ledgerEntries, setLedgerEntries] = useState([]);
+  const [loadingLedger, setLoadingLedger] = useState(false);
 
   useEffect(() => {
     if (view === 'account_list') {
@@ -33,8 +35,18 @@ export default function LedgerQuery({ onExit }) {
     setFilteredAccounts(filtered);
   };
 
-  const handleAccountSelect = (account) => {
+  const handleAccountSelect = async (account) => {
     setSelectedAccount(account);
+    setLoadingLedger(true);
+    try {
+      const entries = await getLedgerQuery(account.acCode?.toString());
+      setLedgerEntries(entries || []);
+    } catch (e) {
+      console.error(e);
+      setLedgerEntries([]);
+    } finally {
+      setLoadingLedger(false);
+    }
     setView('ledger_details');
   };
 
@@ -61,7 +73,16 @@ export default function LedgerQuery({ onExit }) {
         <span role="img" aria-label="folder">📂</span>
         <span>{title}</span>
       </div>
-      <span style={{ marginLeft: '150px' }}>18-05-2026 (MONDAY)</span>
+      <span style={{ marginLeft: '150px' }}>
+        {(() => {
+          const now = new Date();
+          const days = ['SUNDAY','MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY'];
+          const dd = String(now.getDate()).padStart(2,'0');
+          const mm = String(now.getMonth()+1).padStart(2,'0');
+          const yyyy = now.getFullYear();
+          return `${dd}-${mm}-${yyyy} (${days[now.getDay()]})`;
+        })()}
+      </span>
       <span>PARAS AUTO PARTS</span>
       <span>(OPER)</span>
       <button 
@@ -256,25 +277,68 @@ export default function LedgerQuery({ onExit }) {
                     </tr>
                   </thead>
                   <tbody>
-                    <tr>
-                      <td style={{...tdLedgerStyle, color: '#cc0000'}}>01-04-2026</td>
-                      <td style={{...tdLedgerStyle, color: '#cc0000'}}>* OPENING BALANCE *</td>
-                      <td style={{...tdLedgerStyle, color: '#cc0000', textAlign: 'right'}}>{(selectedAccount.openingBalance || 0).toFixed(2)}</td>
+                    {/* Opening balance row - pink */}
+                    <tr style={{ background: '#ffe0e0' }}>
+                      <td style={{...tdLedgerStyle, color:'#cc0000'}}>01-04-2026</td>
+                      <td style={{...tdLedgerStyle, color:'#cc0000', fontWeight:'bold'}}>* OPENING BALANCE *</td>
+                      <td style={{...tdLedgerStyle, textAlign:'right', color:'#cc0000'}}>
+                        {(selectedAccount.openingBalance || 0).toFixed(2)}
+                      </td>
                       <td style={tdLedgerStyle}></td>
-                      <td style={{...tdLedgerStyle, color: '#cc0000'}}>D</td>
-                      <td style={{...tdLedgerStyle, color: '#cc0000', textAlign: 'right'}}>{(selectedAccount.openingBalance || 0).toFixed(2)}</td>
-                      <td style={tdLedgerStyle}></td>
+                      <td style={{...tdLedgerStyle, color:'#cc0000'}}>D</td>
+                      <td style={{...tdLedgerStyle, textAlign:'right', color:'#cc0000'}}>
+                        {(selectedAccount.openingBalance || 0).toFixed(2)}
+                      </td>
+                      <td style={tdLedgerStyle}>OPN</td>
                       <td style={tdLedgerStyle}></td>
                       <td style={tdLedgerStyle}></td>
                       <td style={tdLedgerStyle}></td>
                     </tr>
-                    <tr>
-                      <td style={{...tdLedgerStyle, color: '#cc0000'}}>31-03-2027</td>
-                      <td style={{...tdLedgerStyle, color: '#cc0000'}}>* CLOSING BALANCE *</td>
-                      <td style={{...tdLedgerStyle, color: '#cc0000', textAlign: 'right'}}>{(selectedAccount.balance || 0).toFixed(2)}</td>
-                      <td style={{...tdLedgerStyle, color: '#cc0000', textAlign: 'right'}}>0.00</td>
-                      <td style={{...tdLedgerStyle, color: '#cc0000'}}>D</td>
-                      <td style={{...tdLedgerStyle, color: '#cc0000', textAlign: 'right'}}>{(selectedAccount.balance || 0).toFixed(2)}</td>
+
+                    {/* Actual ledger transactions */}
+                    {loadingLedger ? (
+                      <tr><td colSpan={10} style={{padding:'10px',textAlign:'center'}}>Loading...</td></tr>
+                    ) : (
+                      ledgerEntries.map((entry, idx) => {
+                        const runningBal = (selectedAccount.openingBalance || 0) +
+                          ledgerEntries.slice(0, idx + 1).reduce((sum, e) =>
+                            sum + (e.dc === 'D' ? e.amount : -e.amount), 0);
+                        return (
+                          <tr key={entry.id || idx}
+                            style={{ background: idx % 2 === 0 ? '#fff' : '#f0f8ff' }}>
+                            <td style={tdLedgerStyle}>{entry.date}</td>
+                            <td style={tdLedgerStyle}>{entry.narration}</td>
+                            <td style={{...tdLedgerStyle, textAlign:'right', color:'#cc0000'}}>
+                              {entry.dc === 'D' ? entry.amount?.toFixed(2) : ''}
+                            </td>
+                            <td style={{...tdLedgerStyle, textAlign:'right', color:'#006600'}}>
+                              {entry.dc === 'C' ? entry.amount?.toFixed(2) : ''}
+                            </td>
+                            <td style={{...tdLedgerStyle, textAlign:'center', fontWeight:'bold'}}>
+                              {entry.dc}
+                            </td>
+                            <td style={{...tdLedgerStyle, textAlign:'right', fontWeight:'bold', color:'#003399'}}>
+                              {Math.abs(runningBal).toFixed(2)}
+                            </td>
+                            <td style={tdLedgerStyle}>{entry.source}</td>
+                            <td style={{...tdLedgerStyle, color:'#003399'}}>{entry.docNo}</td>
+                            <td style={tdLedgerStyle}></td>
+                            <td style={tdLedgerStyle}></td>
+                          </tr>
+                        );
+                      })
+                    )}
+
+                    {/* Closing balance row */}
+                    <tr style={{ background: '#ffe0e0' }}>
+                      <td style={{...tdLedgerStyle, color:'#cc0000'}}>31-03-2027</td>
+                      <td style={{...tdLedgerStyle, color:'#cc0000', fontWeight:'bold'}}>* CLOSING BALANCE *</td>
+                      <td style={tdLedgerStyle}></td>
+                      <td style={tdLedgerStyle}></td>
+                      <td style={{...tdLedgerStyle, color:'#cc0000'}}>D</td>
+                      <td style={{...tdLedgerStyle, textAlign:'right', color:'#cc0000', fontWeight:'bold'}}>
+                        {(selectedAccount.balance || 0).toFixed(2)}
+                      </td>
                       <td style={tdLedgerStyle}></td>
                       <td style={tdLedgerStyle}></td>
                       <td style={tdLedgerStyle}></td>

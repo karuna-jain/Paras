@@ -8,7 +8,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/quotations")
-@CrossOrigin("*")
 public class QuotationController {
     @Autowired
     private QuotationRepository quotationRepository;

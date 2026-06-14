@@ -81,10 +81,14 @@ export default function PickSlipList({ onExit, onCreateBill }) {
 
     if (onCreateBill) {
       onCreateBill({
-        ...order,
-        fromOrderId: order.id,
-        amount: order.amount,
-        items: order.items.map(i => ({
+        partyCd:      order.partyCd,
+        customerName: order.customerName,
+        address:      order.address,
+        city:         order.city,
+        transport:    order.transport,
+        rateType:     order.rateType,
+        fromOrderId:  order.id,       // ← used as pickSlipId in SaleBill
+        items:        (order.items || []).map(i => ({
           ...i,
           qty: i.pickQty !== undefined ? i.pickQty : i.qty,
           rate: i.rate || i.list || 0,
@@ -267,7 +271,16 @@ export default function PickSlipList({ onExit, onCreateBill }) {
       {/* ── HEADER ── */}
       <div style={{ height: '26px', background: '#eef3f7', borderBottom: '1px solid #9caab7', display: 'flex', alignItems: 'center', paddingLeft: '10px', gap: '40px', flexShrink: 0 }}>
         <span>Pick-Slips (Sales) List</span>
-        <span>21-05-2026 (THURSDAY)</span>
+        <span>
+          {(() => {
+            const now = new Date();
+            const days = ['SUNDAY','MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY'];
+            const dd = String(now.getDate()).padStart(2,'0');
+            const mm = String(now.getMonth()+1).padStart(2,'0');
+            const yyyy = now.getFullYear();
+            return `${dd}-${mm}-${yyyy} (${days[now.getDay()]})`;
+          })()}
+        </span>
         <span>PARAS AUTO PARTS</span>
         <span>(OPER)</span>
       </div>
@@ -398,12 +411,12 @@ export default function PickSlipList({ onExit, onCreateBill }) {
                       let bal = ledgerBal;
                       return ledgerTxs.map((tx, idx) => {
                         const amt = tx.amount || 0;
-                        if ("D".equalsIgnoreCase(tx.dc)) {
+                        if (tx.dc && tx.dc.toUpperCase() === "D") {
                           bal += amt;
                         } else {
                           bal -= amt;
                         }
-                        const isCredit = "C".equalsIgnoreCase(tx.dc);
+                        const isCredit = tx.dc && tx.dc.toUpperCase() === "C";
                         return (
                           <tr key={idx} style={{ background: isCredit ? '#e8f4ff' : '#ffffff', borderBottom: '1px solid #eee' }}>
                             <td style={{ padding: '4px', borderRight: '1px solid #ccc' }}>{tx.date}</td>

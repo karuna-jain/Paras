@@ -190,7 +190,7 @@ public class DataSeeder implements CommandLineRunner {
                 a.setGstin((String) acc[25]);
                 a.setCrLimitDays((Integer) acc[26]);
                 a.setGstCatg((String) acc[27]);
-                a.setAcOpenDate((String) acc[29]);
+                a.setAcOpenDate((String) acc[28]);
                 a.setOpeningBalance((Double) acc[29]);
                 a.setBalance((Double) acc[30]);
                 accountRepository.save(a);
@@ -256,14 +256,14 @@ public class DataSeeder implements CommandLineRunner {
             bill.setCaseNo("1");
             bill.setPvtMarka("R-IND");
             bill.setEwayBillNo("EWAY889922");
-            bill.setSaleAmt(540.0);
-            bill.setCgst(75.6);
-            bill.setSgst(75.6);
-            bill.setIgst(0.0);
-            bill.setPostage(0.0);
-            bill.setFreight(20.0);
-            bill.setHammali(10.0);
-            bill.setNetAmt(721.2);
+            bill.setSaleAmt(BigDecimal.valueOf(540.0));
+            bill.setCgst(BigDecimal.valueOf(75.6));
+            bill.setSgst(BigDecimal.valueOf(75.6));
+            bill.setIgst(BigDecimal.ZERO);
+            bill.setPostage(BigDecimal.ZERO);
+            bill.setFreight(BigDecimal.valueOf(20.0));
+            bill.setHammali(BigDecimal.valueOf(10.0));
+            bill.setNetAmt(BigDecimal.valueOf(721.2));
 
             List<SaleBillItem> items = new ArrayList<>();
             
@@ -275,13 +275,13 @@ public class DataSeeder implements CommandLineRunner {
             item1.setStock(50);
             item1.setModel("SPLENDOR PLUS");
             item1.setQty(2.0);
-            item1.setListPrice(180.0);
-            item1.setDiscount(5.0);
-            item1.setRate(171.0);
-            item1.setAmount(342.0);
-            item1.setNPur(108.0);
+            item1.setListPrice(BigDecimal.valueOf(180.0));
+            item1.setDiscount(BigDecimal.valueOf(5.0));
+            item1.setRate(BigDecimal.valueOf(171.0));
+            item1.setAmount(BigDecimal.valueOf(342.0));
+            item1.setNPur(BigDecimal.valueOf(108.0));
             item1.setHsn("8714");
-            item1.setGstPercent(28.0);
+            item1.setGstPercent(BigDecimal.valueOf(28.0));
             items.add(item1);
 
             SaleBillItem item2 = new SaleBillItem();
@@ -292,13 +292,13 @@ public class DataSeeder implements CommandLineRunner {
             item2.setStock(100);
             item2.setModel("ACTIVA 6G");
             item2.setQty(2.0);
-            item2.setListPrice(90.0);
-            item2.setDiscount(5.0);
-            item2.setRate(85.5);
-            item2.setAmount(171.0);
-            item2.setNPur(52.8);
+            item2.setListPrice(BigDecimal.valueOf(90.0));
+            item2.setDiscount(BigDecimal.valueOf(5.0));
+            item2.setRate(BigDecimal.valueOf(85.5));
+            item2.setAmount(BigDecimal.valueOf(171.0));
+            item2.setNPur(BigDecimal.valueOf(52.8));
             item2.setHsn("8714");
-            item2.setGstPercent(28.0);
+            item2.setGstPercent(BigDecimal.valueOf(28.0));
             items.add(item2);
 
             bill.setItems(items);
@@ -308,7 +308,7 @@ public class DataSeeder implements CommandLineRunner {
             AccountLedger ledger = new AccountLedger();
             ledger.setAcId(1L); // Ramesh Auto Agency
             ledger.setAcCode("1001");
-            ledger.setAmount(721.2);
+            ledger.setAmount(BigDecimal.valueOf(721.2));
             ledger.setDc("D");
             ledger.setNarration("To Sales Invoice SB-2026-001");
             ledger.setDocNo("SB-2026-001");
@@ -329,11 +329,11 @@ public class DataSeeder implements CommandLineRunner {
             purchase.setSupplierName("SHREE SHYAM SPARES");
             purchase.setAddress("101, SPANISH TOWERS");
             purchase.setCity("NEW DELHI");
-            purchase.setTotalAmount(1800.0);
-            purchase.setCgst(0.0);
-            purchase.setSgst(0.0);
-            purchase.setIgst(378.0); // 21% average or 18/28%
-            purchase.setNetAmount(2178.0);
+            purchase.setTotalAmount(BigDecimal.valueOf(1800.0));
+            purchase.setCgst(BigDecimal.ZERO);
+            purchase.setSgst(BigDecimal.ZERO);
+            purchase.setIgst(BigDecimal.valueOf(378.0)); // 21% average or 18/28%
+            purchase.setNetAmount(BigDecimal.valueOf(2178.0));
 
             List<PurchaseItem> pItems = new ArrayList<>();
             PurchaseItem pi1 = new PurchaseItem();
@@ -343,10 +343,10 @@ public class DataSeeder implements CommandLineRunner {
             pi1.setDescription("CLUTCH PLATE SET");
             pi1.setModel("PULSAR 150");
             pi1.setQty(5.0);
-            pi1.setPurchaseRate(220.0);
-            pi1.setAmount(1100.0);
+            pi1.setPurchaseRate(BigDecimal.valueOf(220.0));
+            pi1.setAmount(BigDecimal.valueOf(1100.0));
             pi1.setHsn("8714");
-            pi1.setGstPercent(28.0);
+            pi1.setGstPercent(BigDecimal.valueOf(28.0));
             pItems.add(pi1);
 
             PurchaseItem pi2 = new PurchaseItem();
@@ -356,10 +356,10 @@ public class DataSeeder implements CommandLineRunner {
             pi2.setDescription("AIR FILTER ELEMENT");
             pi2.setModel("TVS APACHE RTR");
             pi2.setQty(5.0);
-            pi2.setPurchaseRate(80.0);
-            pi2.setAmount(400.0);
+            pi2.setPurchaseRate(BigDecimal.valueOf(80.0));
+            pi2.setAmount(BigDecimal.valueOf(400.0));
             pi2.setHsn("4016");
-            pi2.setGstPercent(18.0);
+            pi2.setGstPercent(BigDecimal.valueOf(18.0));
             pItems.add(pi2);
 
             purchase.setItems(pItems);
@@ -369,7 +369,7 @@ public class DataSeeder implements CommandLineRunner {
             AccountLedger ledger = new AccountLedger();
             ledger.setAcId(3L); // Shree Shyam Spares
             ledger.setAcCode("2001");
-            ledger.setAmount(2178.0);
+            ledger.setAmount(BigDecimal.valueOf(2178.0));
             ledger.setDc("C");
             ledger.setNarration("By Purchase Invoice PI-2026-104");
             ledger.setDocNo("PI-2026-104");
@@ -384,8 +384,9 @@ public class DataSeeder implements CommandLineRunner {
             CbVoucher voucher = new CbVoucher();
             voucher.setVoucherNo("CBV-2026-001");
             voucher.setVoucherDate("06-05-2026");
-            voucher.setTotalDr(500.0);
-            voucher.setTotalCr(500.0);
+            voucher.setTotalDr(BigDecimal.valueOf(500.0));
+            voucher.setTotalCr(BigDecimal.valueOf(500.0));
+            voucher.setType("Cash/Bank");
 
             List<CbVoucherLine> lines = new ArrayList<>();
             CbVoucherLine line1 = new CbVoucherLine();
@@ -394,7 +395,7 @@ public class DataSeeder implements CommandLineRunner {
             line1.setAcCode("1001");
             line1.setAcName("RAMESH AUTO AGENCY");
             line1.setDrCr("CR");
-            line1.setAmount(500.0);
+            line1.setAmount(BigDecimal.valueOf(500.0));
             line1.setNarration("Cash Received against bill");
             lines.add(line1);
 
@@ -404,7 +405,7 @@ public class DataSeeder implements CommandLineRunner {
             line2.setAcCode("3001");
             line2.setAcName("CASH IN HAND");
             line2.setDrCr("DR");
-            line2.setAmount(500.0);
+            line2.setAmount(BigDecimal.valueOf(500.0));
             line2.setNarration("Cash Received from Ramesh Auto");
             lines.add(line2);
 
@@ -415,7 +416,7 @@ public class DataSeeder implements CommandLineRunner {
             AccountLedger ledger1 = new AccountLedger();
             ledger1.setAcId(1L);
             ledger1.setAcCode("1001");
-            ledger1.setAmount(500.0);
+            ledger1.setAmount(BigDecimal.valueOf(500.0));
             ledger1.setDc("C");
             ledger1.setNarration("To Cash Received");
             ledger1.setDocNo("CBV-2026-001");
@@ -426,7 +427,7 @@ public class DataSeeder implements CommandLineRunner {
             AccountLedger ledger2 = new AccountLedger();
             ledger2.setAcId(4L);
             ledger2.setAcCode("3001");
-            ledger2.setAmount(500.0);
+            ledger2.setAmount(BigDecimal.valueOf(500.0));
             ledger2.setDc("D");
             ledger2.setNarration("By Cash Received from Ramesh Auto");
             ledger2.setDocNo("CBV-2026-001");

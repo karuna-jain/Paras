@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { getSalesOrders, deleteSalesOrder, getAccounts } from './api';
 import { FaShoppingCart, FaQuestionCircle } from 'react-icons/fa';
 import SalesOrderEntry from './SalesOrderEntry';
+import Loading from './components/Loading';
 
 export default function SalesOrderView({ onExit, reportMode = false, onCreateBill }) {
   const [orders, setOrders] = useState([]);
@@ -19,7 +20,7 @@ export default function SalesOrderView({ onExit, reportMode = false, onCreateBil
 
   const loadOrders = async () => {
     try {
-      const data = await getSalesOrders(false); // unbilled
+      const data = await getSalesOrders(); // show all orders
       setOrders(data);
     } catch (err) {
       console.error('Failed to load orders', err);
@@ -149,7 +150,16 @@ export default function SalesOrderView({ onExit, reportMode = false, onCreateBil
         flexShrink: 0
       }}>
         <span>{reportMode ? 'Pick Slip Report' : 'S.Orders'}</span>
-        <span>21-05-2026 (THURSDAY)</span>
+        <span>
+          {(() => {
+            const now = new Date();
+            const days = ['SUNDAY','MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY'];
+            const dd = String(now.getDate()).padStart(2,'0');
+            const mm = String(now.getMonth()+1).padStart(2,'0');
+            const yyyy = now.getFullYear();
+            return `${dd}-${mm}-${yyyy} (${days[now.getDay()]})`;
+          })()}
+        </span>
         <span>PARAS AUTO PARTS</span>
         <span>(OPER)</span>
       </div>
@@ -320,9 +330,7 @@ export default function SalesOrderView({ onExit, reportMode = false, onCreateBil
           background: 'white',
         }}>
           {loading ? (
-            <div style={{ padding: '20px', color: '#666', textAlign: 'center' }}>
-              Loading orders...
-            </div>
+            <Loading text="Loading orders..." />
           ) : orders.length === 0 ? (
             <div style={{ padding: '20px', color: '#888', textAlign: 'center' }}>
               No sales orders found.

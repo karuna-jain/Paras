@@ -34,6 +34,15 @@ import AcBalanceEntry from './AcBalanceEntry'
 import DisplayPriceList from './DisplayPriceList'
 import { useEffect } from 'react'
 
+const fullscreenTabs = [
+  'sales-orders', 'parts', 'brand-master', 'model-master',
+  'wholesale', 'retail', 'cb-voucher', 'j-voucher', 'quotation',
+  'purchase-orders', 'stock-report', 'ledger-report', 'account-query',
+  'stock-query', 'company-setup', 'user-permissions', 'accounts',
+  'ledger-query', 'pick-slip-report', 'ac-balance', 'price-list',
+  'city-master', 'purchases', 'purch-report', 'sales-report', 'hsn-master'
+];
+
 
 const menuItemStyle = {
   padding: '8px 12px',
@@ -169,31 +178,7 @@ function App() {
       }}
     >
       {/* HIDE MENU FOR FULL PAGE WINDOWS */}
-      {activeTab !== 'sales-orders' &&
-        activeTab !== 'parts' &&
-        activeTab !== 'brand-master' &&
-        activeTab !== 'model-master' &&
-        activeTab !== 'wholesale' &&
-        activeTab !== 'retail' &&
-        activeTab !== 'cb-voucher' &&
-        activeTab !== 'j-voucher' &&
-        activeTab !== 'quotation' &&
-        activeTab !== 'purchase-orders' &&
-        activeTab !== 'stock-report' &&
-        activeTab !== 'ledger-report' &&
-        activeTab !== 'account-query' &&
-        activeTab !== 'stock-query' &&
-        activeTab !== 'company-setup' &&
-        activeTab !== 'user-permissions' &&
-        activeTab !== 'accounts' &&
-        activeTab !== 'ledger-query' &&
-        activeTab !== 'pick-slip-report' &&
-        activeTab !== 'ac-balance' &&
-        activeTab !== 'price-list' &&
-        activeTab !== 'city-master' &&
-        activeTab !== 'purchases' &&
-        activeTab !== 'purch-report' &&
-        activeTab !== 'sales-report' && (
+      {!fullscreenTabs.includes(activeTab) && (
 
           <>
             {/* TOP MENU */}
@@ -359,7 +344,14 @@ function App() {
                   color: '#4b5c7a'
                 }}
               >
-                05-05-2026 (TUESDAY)
+                {(() => {
+                  const now = new Date();
+                  const days = ['SUNDAY','MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY'];
+                  const dd = String(now.getDate()).padStart(2,'0');
+                  const mm = String(now.getMonth()+1).padStart(2,'0');
+                  const yyyy = now.getFullYear();
+                  return `${dd}-${mm}-${yyyy} (${days[now.getDay()]})`;
+                })()}
                 &nbsp;&nbsp;&nbsp;
                 PARAS AUTO PARTS
                 &nbsp;&nbsp;&nbsp;
@@ -480,7 +472,7 @@ function App() {
         style={{
           width: '100%',
           height:
-            activeTab !== 'home'
+            fullscreenTabs.includes(activeTab)
               ? '100vh'
               : 'calc(100vh - 118px)',
           overflow: 'hidden',
@@ -506,7 +498,7 @@ function App() {
             )}
 
             {activeTab === 'parts' && (
-              <PartView />
+              <PartView onExit={() => setActiveTab('home')} />
             )}
 
             {activeTab === 'brand-master' && (

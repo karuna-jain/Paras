@@ -8,7 +8,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/hsn-master")
-@CrossOrigin("*")
 public class HSNController {
     @Autowired
     private HSNMasterRepository hsnMasterRepository;

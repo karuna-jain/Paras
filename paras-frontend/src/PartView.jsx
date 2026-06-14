@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-export default function PartsView() {
+export default function PartsView({ onExit }) {
 
   const [parts, setParts] = useState([]);
   const [selectedIndex, setSelectedIndex] = useState(null);
@@ -255,7 +255,16 @@ export default function PartsView() {
       {/* HEADER */}
       <div className="h-[26px] border border-[#9caab7] bg-[#eef3f7] flex items-center px-[8px]">
         <div className="w-[180px]">Part Master Entry</div>
-        <div className="w-[180px] text-center">05-05-2026 (TUESDAY)</div>
+        <div className="w-[180px] text-center">
+          {(() => {
+            const now = new Date();
+            const days = ['SUNDAY','MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY'];
+            const dd = String(now.getDate()).padStart(2,'0');
+            const mm = String(now.getMonth()+1).padStart(2,'0');
+            const yyyy = now.getFullYear();
+            return `${dd}-${mm}-${yyyy} (${days[now.getDay()]})`;
+          })()}
+        </div>
         <div className="w-[220px] text-center">PARAS AUTO PARTS</div>
         <div>(OPER)</div>
       </div>
@@ -592,9 +601,7 @@ export default function PartsView() {
           <button onClick={handleNext} disabled={parts.length === 0 || currentNavIndex === parts.length - 1} className="h-[28px] border border-[#596c7b] bg-[#f5f5f5] text-[11px] font-bold hover:bg-[#e0e0e0] disabled:opacity-40 disabled:cursor-not-allowed">{'NEXT>>'}</button>
           <button onClick={handleLast} disabled={parts.length === 0} className="h-[28px] border border-[#596c7b] bg-[#f5f5f5] text-[11px] font-bold hover:bg-[#e0e0e0] disabled:opacity-40 disabled:cursor-not-allowed">LAST</button>
           <button
-            onClick={() => {
-              window.location.href = '/';
-            }} className="h-[28px] border border-[#7a0000] bg-[#ff1f1f] text-white text-[11px] font-bold hover:bg-[#cc0000]">CLOSE</button>
+            onClick={onExit} className="h-[28px] border border-[#7a0000] bg-[#ff1f1f] text-white text-[11px] font-bold hover:bg-[#cc0000]">CLOSE</button>
         </div>
       </div>
 

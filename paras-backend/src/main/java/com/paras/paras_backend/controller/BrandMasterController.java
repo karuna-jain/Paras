@@ -10,7 +10,6 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/brands")
-@CrossOrigin("*")
 public class BrandMasterController {
 
     @Autowired

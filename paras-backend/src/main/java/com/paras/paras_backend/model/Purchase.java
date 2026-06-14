@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import java.math.BigDecimal;
 
 @Entity
 @Data
@@ -35,14 +36,14 @@ public class Purchase {
     private String city;
 
     @Column(name = "total_amount")
-    private Double totalAmount = 0.0;
+    private BigDecimal totalAmount = BigDecimal.ZERO;
 
-    private Double cgst = 0.0;
-    private Double sgst = 0.0;
-    private Double igst = 0.0;
+    private BigDecimal cgst = BigDecimal.ZERO;
+    private BigDecimal sgst = BigDecimal.ZERO;
+    private BigDecimal igst = BigDecimal.ZERO;
 
     @Column(name = "net_amount")
-    private Double netAmount = 0.0;
+    private BigDecimal netAmount = BigDecimal.ZERO;
 
     @OneToMany(mappedBy = "purchase", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PurchaseItem> items;

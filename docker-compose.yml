@@ -1,0 +1,32 @@
+services:
+  # Database Service
+  db:
+    image: mysql:8.0
+    container_name: paras-mysql-db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: paras_autoparts
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  # Spring Boot Backend + Embedded React Frontend Service
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: paras-app
+    restart: always
+    ports:
+      - "8082:8080"
+    environment:
+      - DB_HOST=db
+      - DB_USER=root
+      - DB_PASS=rootpassword
+    depends_on:
+      - db
+
+volumes:
+  mysql_data:

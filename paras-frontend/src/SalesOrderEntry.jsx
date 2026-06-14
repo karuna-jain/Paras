@@ -575,7 +575,30 @@ export default function SalesOrderEntry({ order, onBack, onClose, prefilledAccou
         paddingLeft: '10px', gap: '40px', flexShrink: 0,
       }}>
         <span style={{ fontWeight: 'bold' }}>{pickSlipMode ? 'PICK-SLIP' : 'S.Order Entry'}</span>
-        <span>{formData.orderDate ? formData.orderDate : '21-05-2026'} (THURSDAY)</span>
+        <span>
+          {(() => {
+            const dateStr = formData.orderDate; // yyyy-mm-dd or similar
+            let d = new Date();
+            let displayStr = '';
+            if (dateStr) {
+              const parts = dateStr.split('-');
+              if (parts.length === 3) {
+                // assume yyyy-mm-dd
+                d = new Date(parts[0], parts[1]-1, parts[2]);
+                displayStr = `${parts[2]}-${parts[1]}-${parts[0]}`;
+              } else {
+                displayStr = dateStr;
+              }
+            } else {
+              const dd = String(d.getDate()).padStart(2,'0');
+              const mm = String(d.getMonth()+1).padStart(2,'0');
+              const yyyy = d.getFullYear();
+              displayStr = `${dd}-${mm}-${yyyy}`;
+            }
+            const days = ['SUNDAY','MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY'];
+            return `${displayStr} (${days[d.getDay()]})`;
+          })()}
+        </span>
         <span>PARAS AUTO PARTS</span>
         <span>(OPER)</span>
       </div>
@@ -1055,7 +1078,15 @@ export default function SalesOrderEntry({ order, onBack, onClose, prefilledAccou
         <div style={overlayStyle}>
           <div style={{ ...modalStyle, width: '680px' }}>
             <div style={modalHeaderStyle}>
-              <span>Add Items — 21-05-2026</span>
+              <span>
+                {(() => {
+                  const now = new Date();
+                  const dd = String(now.getDate()).padStart(2,'0');
+                  const mm = String(now.getMonth()+1).padStart(2,'0');
+                  const yyyy = now.getFullYear();
+                  return `Add Items — ${dd}-${mm}-${yyyy}`;
+                })()}
+              </span>
               <div style={{ display: 'flex', gap: '4px' }}>
                 <button style={{ background: 'none', border: 'none', color: 'white', fontWeight: 'bold' }}>—</button>
                 <button style={{ background: 'none', border: 'none', color: 'white', fontWeight: 'bold' }}>□</button>
@@ -1355,12 +1386,12 @@ export default function SalesOrderEntry({ order, onBack, onClose, prefilledAccou
                       let bal = ledgerBal;
                       return ledgerTxs.slice(0, 20).map((tx, idx) => {
                         const amt = tx.amount || 0;
-                        if ("D".equalsIgnoreCase(tx.dc)) {
+                        if (tx.dc && tx.dc.toUpperCase() === "D") {
                           bal += amt;
                         } else {
                           bal -= amt;
                         }
-                        const isCredit = "C".equalsIgnoreCase(tx.dc);
+                        const isCredit = tx.dc && tx.dc.toUpperCase() === "C";
                         return (
                           <tr key={idx} style={{ background: isCredit ? '#e8f4ff' : '#ffffff', borderBottom: '1px solid #eee' }}>
                             <td style={{ padding: '4px', borderRight: '1px solid #ccc' }}>{tx.date}</td>

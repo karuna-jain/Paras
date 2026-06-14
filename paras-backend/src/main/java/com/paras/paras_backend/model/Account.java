@@ -2,6 +2,8 @@ package com.paras.paras_backend.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 @Entity
 @Data
@@ -11,9 +13,11 @@ public class Account {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotNull(message = "AC Code is required")
     @Column(unique = true)
     private Integer acCode;
     private Integer headCode; // 1 = Debtors, 2 = Creditors
+    @NotBlank(message = "Account name is required")
     @Column(nullable = false)
     private String name;
     private String addressOff;
