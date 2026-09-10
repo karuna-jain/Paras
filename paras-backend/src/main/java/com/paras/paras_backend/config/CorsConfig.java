@@ -13,12 +13,10 @@ public class CorsConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/api/**")
-                        .allowedOrigins(
-                            "http://localhost:5173",  // dev
-                            "http://localhost:4173"   // vite preview
-                        )
+                        .allowedOriginPatterns("*")  // allows all origins incl. Electron file:// (null origin)
                         .allowedMethods("GET","POST","PUT","PATCH","DELETE","OPTIONS")
-                        .allowedHeaders("*");
+                        .allowedHeaders("*")
+                        .allowCredentials(false);
             }
         };
     }

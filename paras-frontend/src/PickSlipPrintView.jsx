@@ -155,6 +155,8 @@ export default function PickSlipPrintView({ formData, items, totalAmount, onBack
         ))}
       </div>
 
+      {/* Printable Area */}
+      <div ref={printAreaRef} className="print-area" style={{ padding: '20px', flex: 1, display: 'flex', flexDirection: 'column', backgroundColor: 'white' }}>
         {/* ── REPORT TITLE ── */}
         <div style={{ textAlign: 'center', fontSize: '16px', fontWeight: 'bold', textDecoration: 'underline', marginBottom: '10px' }}>
           PENDING ORDER (WITH S.RATE)
@@ -191,43 +193,35 @@ export default function PickSlipPrintView({ formData, items, totalAmount, onBack
             </tr>
           </thead>
           <tbody>
-            {groups.map(group => {
-              const groupTotal = group.items.reduce((s, i) => s + Number(i.amount || 0), 0);
-              return (
-                <>
-                  {/* Category Header Row */}
-                  <tr key={`cat-${group.category}`}>
-                    <td colSpan={10} style={{
-                      ...cellStyle(), fontWeight: 'bold', fontStyle: 'italic',
-                      color: '#333', borderBottom: '1px solid #ddd',
-                      fontSize: '11.5px', paddingTop: '8px'
-                    }}>
-                      {group.category}
-                    </td>
-                  </tr>
-
-                  {/* Items */}
-                  {group.items.map((item, idx) => (
-                    <tr key={idx}>
-                      <td style={cellStyle({ textAlign: 'center' })}>{idx + 1}</td>
-                      <td style={cellStyle()}>{item.brand}</td>
-                      <td style={cellStyle()}>{item.partNo}</td>
-                      <td style={cellStyle({ textAlign: 'right' })}>{item.qty || item.ordQty}</td>
-                      <td style={cellStyle()}>{item.description}</td>
-                      <td style={cellStyle()}>{item.model || 'COMMON'}</td>
-                      <td style={cellStyle({ textAlign: 'right' })}>{Number(item.list || 0).toFixed(2)}</td>
-                      <td style={cellStyle({ textAlign: 'right' })}>{Number(item.dis || 0).toFixed(1)}%</td>
-                      <td style={cellStyle({ textAlign: 'right' })}>{Number(item.netSale || 0).toFixed(2)}</td>
-                      <td style={cellStyle({ textAlign: 'right' })}>{Number(item.amount || 0).toFixed(2)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              );
-            })}
+            {groups.flatMap(group => [
+              <tr key={`group-${group.category}`}>
+                <td colSpan={10} style={{
+                  ...cellStyle(), fontWeight: 'bold', fontStyle: 'italic',
+                  color: '#333', borderBottom: '1px solid #000',
+                  background: '#f3f4f6', fontSize: '11.5px', paddingTop: '6px', paddingBottom: '6px'
+                }}>
+                  {group.category}
+                </td>
+              </tr>,
+              ...group.items.map((item, idx) => (
+                <tr key={`${group.category}-${idx}`} style={{ borderBottom: '1px solid #eee' }}>
+                  <td style={cellStyle({ textAlign: 'center', width: '30px' })}>{idx + 1}</td>
+                  <td style={cellStyle()}>{item.brand}</td>
+                  <td style={cellStyle()}>{item.partNo}</td>
+                  <td style={cellStyle({ textAlign: 'right', width: '40px' })}>{item.qty || item.ordQty}</td>
+                  <td style={cellStyle()}>{item.description}</td>
+                  <td style={cellStyle()}>{item.model || 'COMMON'}</td>
+                  <td style={cellStyle({ textAlign: 'right' })}>{Number(item.list || 0).toFixed(2)}</td>
+                  <td style={cellStyle({ textAlign: 'right' })}>{Number(item.dis || 0).toFixed(1)}%</td>
+                  <td style={cellStyle({ textAlign: 'right' })}>{Number(item.netSale || 0).toFixed(2)}</td>
+                  <td style={cellStyle({ textAlign: 'right', width: '90px' })}>{Number(item.amount || 0).toFixed(2)}</td>
+                </tr>
+              ))
+            ])}
 
             {items.length === 0 && (
               <tr>
-                <td colSpan={8} style={{ textAlign: 'center', padding: '20px', color: '#999', fontSize: '12px' }}>
+                <td colSpan={10} style={{ textAlign: 'center', padding: '20px', color: '#999', fontSize: '12px' }}>
                   No items in this order.
                 </td>
               </tr>
@@ -261,10 +255,6 @@ export default function PickSlipPrintView({ formData, items, totalAmount, onBack
           <div style={{ padding: '6px 0', fontSize: '12px', borderBottom: '1px solid #ccc' }}>
             <strong>Remarks:</strong> {formData.remarks || ''}
           </div>
-
-          {/* Signatures */}
-
-
         </div>
       </div>
 

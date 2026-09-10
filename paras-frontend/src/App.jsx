@@ -24,6 +24,7 @@ import SalesInvoiceView from './SalesInvoiceView'
 import PurchaseInvoiceView from './PurchaseInvoiceView'
 import VoucherView from './VoucherView'
 import ReportView from './ReportView'
+import DashboardReportView from './DashboardReportView'
 import HSNMaster from './HSNMaster'
 import QuotationView from './QuotationView'
 import PurchaseOrderView from './PurchaseOrderView'
@@ -533,10 +534,10 @@ function App() {
               <VoucherView type="Journal" onExit={() => setActiveTab('home')} />
             )}
             {activeTab === 'purch-report' && (
-              <ReportView title="Purchase Report" onExit={() => setActiveTab('home')} />
+              <DashboardReportView defaultTab="purchase" onExit={() => setActiveTab('home')} />
             )}
             {activeTab === 'sales-report' && (
-              <ReportView title="Sales Report" onExit={() => setActiveTab('home')} />
+              <DashboardReportView defaultTab="sales" onExit={() => setActiveTab('home')} />
             )}
             {activeTab === 'hsn-master' && (
               <HSNMaster onExit={() => setActiveTab('home')} />

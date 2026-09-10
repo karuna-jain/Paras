@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { getParts, getAccounts, createSalesOrder, updateSalesOrder, savePickSlip, getLedgerQuery, getLedgerOpening, getPendingWhatsappMessage, markWhatsappProcessed } from './api';
 import { FaShoppingCart, FaQuestionCircle, FaInfoCircle } from 'react-icons/fa';
 import AccountView from './AccountView';
+import PickSlipPrintView from './PickSlipPrintView';
 
 export default function SalesOrderEntry({ order, onBack, onClose, prefilledAccount, onCreateBill, reportMode }) {
 
@@ -58,6 +59,8 @@ export default function SalesOrderEntry({ order, onBack, onClose, prefilledAccou
   
   const [showAccountModal, setShowAccountModal] = useState(false);
   const [showPrintDialog, setShowPrintDialog] = useState(false);
+  const [showPickSlip, setShowPickSlip] = useState(false);
+  const [printWithSRate, setPrintWithSRate] = useState(true);
   const [showNewAccountModal, setShowNewAccountModal] = useState(false);
   const [showWaModal, setShowWaModal] = useState(false);
   
@@ -102,6 +105,22 @@ export default function SalesOrderEntry({ order, onBack, onClose, prefilledAccou
     getAccounts().then(setAccounts).catch(console.error);
     fetch('/api/brands').then(res => res.json()).then(setBrandHelpList).catch(console.error);
   }, []);
+
+  const fillFromAccount = (acc) => {
+    setFormData(p => ({
+      ...p,
+      partyCd: acc.acCode?.toString() || '',
+      customerName: acc.acName || acc.name || '',
+      address: acc.addOff1 || acc.addressOff || acc.address || '',
+      city: acc.city || '',
+      phoneO: acc.phO || acc.phoneO || '',
+      phoneR: acc.phR || acc.phoneR || '',
+      cellNo: acc.mobileNo || '',
+      transport: acc.transport || '',
+    }));
+    setIsDirty(true);
+    setShowAccountModal(false);
+  };
 
   useEffect(() => {
     if (prefilledAccount && !order) {
@@ -158,22 +177,6 @@ export default function SalesOrderEntry({ order, onBack, onClose, prefilledAccou
       setAccountSearch(formData.partyCd);
       setShowAccountModal(true);
     }
-  };
-
-  const fillFromAccount = (acc) => {
-    setFormData(p => ({
-      ...p,
-      partyCd: acc.acCode?.toString() || '',
-      customerName: acc.acName || acc.name || '',
-      address: acc.addOff1 || acc.addressOff || acc.address || '',
-      city: acc.city || '',
-      phoneO: acc.phO || acc.phoneO || '',
-      phoneR: acc.phR || acc.phoneR || '',
-      cellNo: acc.mobileNo || '',
-      transport: acc.transport || '',
-    }));
-    setIsDirty(true);
-    setShowAccountModal(false);
   };
 
   // ── item helpers ──────────────────────────────────────────────
@@ -560,6 +563,38 @@ export default function SalesOrderEntry({ order, onBack, onClose, prefilledAccou
     height: '28px',
   };
 
+  if (showPickSlip) {
+    return (
+      <PickSlipPrintView
+        formData={{
+          customerName: formData.customerName,
+          address: formData.address,
+          city: formData.city,
+          partyCd: formData.partyCd,
+          orderDate: formData.orderDate,
+          phone: formData.phoneO || formData.cellNo,
+          transport: formData.transport,
+          remarks: formData.remarks
+        }}
+        items={items.map(i => ({
+          brand: i.brand,
+          partNo: i.partNo,
+          qty: i.pickQty !== undefined ? i.pickQty : i.ordQty,
+          description: i.description,
+          model: i.model,
+          list: i.list,
+          dis: i.dis,
+          netSale: i.netSale,
+          amount: i.amount
+        }))}
+        totalAmount={totalAmount}
+        onBack={() => setShowPickSlip(false)}
+        onCreateBill={handleCreateBill}
+        fromOrderId={order?.id || savedOrderId}
+      />
+    );
+  }
+
   return (
     <div style={{
       width: '100%', height: '100vh', display: 'flex', flexDirection: 'column',
@@ -579,7 +614,7 @@ export default function SalesOrderEntry({ order, onBack, onClose, prefilledAccou
           {(() => {
             const dateStr = formData.orderDate; // yyyy-mm-dd or similar
             let d = new Date();
-            let displayStr = '';
+            let displayStr;
             if (dateStr) {
               const parts = dateStr.split('-');
               if (parts.length === 3) {
@@ -1563,6 +1598,34 @@ export default function SalesOrderEntry({ order, onBack, onClose, prefilledAccou
       )}
 
       {/* ── NEW ACCOUNT MODAL ── */}
+      {showWaModal && (
+        <div style={overlayStyle}>
+          <div style={{ ...modalStyle, width: '400px' }}>
+            <div style={modalHeaderStyle}>
+              <span>WhatsApp Order Intake</span>
+              <button onClick={() => setShowWaModal(false)} style={closeXStyle}>✕</button>
+            </div>
+            <div style={{ padding: '15px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div style={{ fontWeight: 'bold' }}>Incoming Text:</div>
+              <textarea
+                value={waText}
+                onChange={e => setWaText(e.target.value)}
+                style={{ width: '100%', height: '150px', border: '1px solid #999', padding: '6px', fontSize: '12px', fontFamily: 'monospace' }}
+                placeholder="Quantity PartNo&#10;Example:&#10;5 BS-001&#10;2 SP-002"
+              />
+              <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                <button onClick={handleWaParse} style={topBtnStyle('#25D366', 'white')}>
+                  Parse & Import
+                </button>
+                <button onClick={() => setShowWaModal(false)} style={topBtnStyle()}>
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {showNewAccountModal && (
         <div style={{ ...overlayStyle, zIndex: 3000 }}>
           <div style={{

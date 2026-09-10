@@ -108,10 +108,10 @@ export default function SalesInvoiceView({ onExit, type = 'Whole-Sale', prefille
               <tbody>
                 {invoices.map((inv, idx) => (
                   <tr key={inv.id} style={{ backgroundColor: idx % 2 === 0 ? '#fff' : '#f2f7ff' }}>
-                    <td><strong>{inv.customerName}</strong></td>
-                    <td style={{ textAlign: 'right', fontWeight: 'bold', color: '#003399' }}>{inv.amount?.toFixed(2) || '0.00'}</td>
+                    <td><strong>{inv.partyName}</strong></td>
+                    <td style={{ textAlign: 'right', fontWeight: 'bold', color: '#003399' }}>{inv.netAmt?.toFixed(2) || '0.00'}</td>
                     <td>{inv.city || ''}</td>
-                    <td>{inv.invoiceDate || ''}</td>
+                    <td>{inv.billDate || ''}</td>
                     <td>{inv.remarks || ''}</td>
                     <td style={{ textAlign: 'center' }}>
                       <button onClick={(e) => handleDelete(e, inv.id)} style={{ color: 'red', fontWeight: 'bold', background: 'none', border: 'none', cursor: 'pointer' }}>×</button>

@@ -2,6 +2,12 @@ import { useState, useEffect } from 'react';
 import { getParts, getAccounts, createSalesInvoice, getNextBillNo, updatePickSlipInvNo, getLedgerQuery, getLedgerOpening } from './api';
 import { FaFileInvoiceDollar, FaQuestionCircle, FaPlus, FaMinus } from 'react-icons/fa';
 
+function getDayOfWeek(dateStr) {
+  if (!dateStr) return '';
+  const days = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
+  return days[new Date(dateStr).getDay()];
+}
+
 export default function SalesInvoiceEntry({ invoice, onBack, onClose, prefilledData, onClearPrefilled }) {
 
   const [formData, setFormData] = useState({
@@ -178,12 +184,6 @@ export default function SalesInvoiceEntry({ invoice, onBack, onClose, prefilledD
       netAmt: Math.round(netValue), // rounded total
     }));
   }, [items, formData.inState, formData.postage, formData.freight, formData.hammali]);
-
-  function getDayOfWeek(dateStr) {
-    if (!dateStr) return '';
-    const days = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
-    return days[new Date(dateStr).getDay()];
-  }
 
   const handleDateChange = (e) => {
     const d = e.target.value;

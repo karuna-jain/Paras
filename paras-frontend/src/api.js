@@ -1,14 +1,16 @@
 import axios from 'axios';
 
-// Determine API baseURL based on environment (Vite proxy for http/web, direct http://localhost:8081/api for Electron file://)
-const baseURL = import.meta.env.VITE_API_BASE_URL || (typeof window !== 'undefined' && window.location.protocol.startsWith('http') ? '/api' : 'http://localhost:8081/api');
-
+// Always use relative '/api' path.
+// - In Vite dev mode (browser): the Vite dev server proxy forwards /api/* to localhost:8081.
+// - In Electron production: electron/main.js registers a custom 'app://' protocol
+//   that intercepts /api/* requests and proxies them to localhost:8081.
 const api = axios.create({
-  baseURL: baseURL,
+  baseURL: '/api',
   headers: {
     'Content-Type': 'application/json',
   },
 });
+
 
 api.interceptors.response.use(
   response => response,

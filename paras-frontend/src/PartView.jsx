@@ -35,16 +35,23 @@ export default function PartsView({ onExit }) {
 
   const [brands, setBrands] = useState([])
   const [models, setModels] = useState([])
-  const hsnList = [
-    { code: '8714', desc: 'Parts And Accessories', gst: '18' },
-    { code: '8409', desc: 'Engine Parts', gst: '28' },
-  ];
+  const [hsnList, setHsnList] = useState([])
 
   const priceColumns = [
     { title: 'PURCHASE PRICE', priceField: 'purchasePrice', discountField: 'purchaseDiscount' },
     { title: 'WHOLE SALE PRICE', priceField: 'wholesalePrice', discountField: 'wholesaleDiscount' },
     { title: 'RETAIL SALE', priceField: 'retailPrice', discountField: 'retailDiscount' },
   ];
+
+  const fetchParts = async () => {
+    try {
+      const response = await fetch('/api/parts');
+      const data = await response.json();
+      setParts(data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   useEffect(() => {
 
@@ -58,16 +65,18 @@ export default function PartsView({ onExit }) {
       .then(res => res.json())
       .then(data => setModels(data))
 
+    fetch('/api/hsn-master')
+      .then(res => res.json())
+      .then(data => {
+        setHsnList(data.map(h => ({
+          code: h.hsnCode,
+          desc: h.description,
+          gst: String(h.gstRate)
+        })));
+      })
+      .catch(error => console.log(error));
+
   }, [])
-  const fetchParts = async () => {
-    try {
-      const response = await fetch('/api/parts');
-      const data = await response.json();
-      setParts(data);
-    } catch (error) {
-      console.log(error);
-    }
-  };
 
   const calcFinal = (price, discount) => {
     const p = parseFloat(price) || 0;
@@ -130,10 +139,19 @@ export default function PartsView({ onExit }) {
         await fetchParts();   // ← re-fetch all from DB, IDs are always correct
         resetForm();
       } else {
-        const err = await response.text();
-        alert('Add failed: ' + err);
+        let errMsg = 'Add failed';
+        try {
+          const errData = await response.json();
+          errMsg = errData.message || errMsg;
+        } catch (e) {
+          errMsg = await response.text() || errMsg;
+        }
+        alert(errMsg);
       }
-    } catch (error) { console.log(error); }
+    } catch (error) { 
+      console.log(error);
+      alert('Network error occurred.');
+    }
   };
 
   const handleEdit = async () => {
@@ -150,10 +168,19 @@ export default function PartsView({ onExit }) {
         await fetchParts();   // ← re-fetch all from DB
         resetForm();
       } else {
-        const err = await response.text();
-        alert('Edit failed: ' + err);
+        let errMsg = 'Edit failed';
+        try {
+          const errData = await response.json();
+          errMsg = errData.message || errMsg;
+        } catch (e) {
+          errMsg = await response.text() || errMsg;
+        }
+        alert(errMsg);
       }
-    } catch (error) { console.log(error); }
+    } catch (error) { 
+      console.log(error);
+      alert('Network error occurred.');
+    }
   };
 
   const handleDelete = async () => {
@@ -161,10 +188,17 @@ export default function PartsView({ onExit }) {
     if (!window.confirm('Delete this part?')) return;
     const dbId = parts[selectedIndex].id;
     try {
-      await fetch(`/api/parts/${dbId}`, { method: 'DELETE' });
-      await fetchParts();   // ← re-fetch all from DB
-      resetForm();
-    } catch (error) { console.log(error); }
+      const response = await fetch(`/api/parts/${dbId}`, { method: 'DELETE' });
+      if (response.ok) {
+        await fetchParts();   // ← re-fetch all from DB
+        resetForm();
+      } else {
+        alert("Delete failed: Part could not be deleted from the database.");
+      }
+    } catch (error) { 
+      console.log(error); 
+      alert('Network error occurred.');
+    }
   };
 
   // ── Navigation ────────────────────────────────────────────────────────

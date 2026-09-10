@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { FaCogs } from 'react-icons/fa';
 
 export default function SetupView({ onExit, title = 'Settings' }) {

@@ -12,7 +12,11 @@ public class ModelMaster {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @jakarta.validation.constraints.NotBlank(message = "Model code cannot be blank")
+    @Column(unique = true, nullable = false, length = 20)
     private String code;
 
+    @jakarta.validation.constraints.NotBlank(message = "Model name cannot be blank")
+    @Column(nullable = false)
     private String name;
 }

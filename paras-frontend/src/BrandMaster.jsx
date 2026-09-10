@@ -12,12 +12,6 @@ export default function BrandMaster() {
         name: ''
     })
 
-    useEffect(() => {
-
-        fetchBrands()
-
-    }, [])
-
     const fetchBrands = async () => {
 
         try {
@@ -35,6 +29,12 @@ export default function BrandMaster() {
 
         }
     }
+
+    useEffect(() => {
+
+        fetchBrands()
+
+    }, [])
 
     const resetForm = () => {
 
@@ -85,95 +85,83 @@ export default function BrandMaster() {
         }
 
         try {
-
-            await fetch('/api/brands', {
-
+            const response = await fetch('/api/brands', {
                 method: 'POST',
-
                 headers: {
                     'Content-Type':
                         'application/json'
                 },
-
                 body: JSON.stringify(formData)
-
             })
 
+            if (!response.ok) {
+                const errData = await response.json();
+                throw new Error(errData.message || "Failed to add brand");
+            }
+
             fetchBrands()
-
             resetForm()
-
         } catch (error) {
-
             console.log(error)
-
+            alert("Error: " + error.message)
         }
     }
 
     const handleEdit = async () => {
-
         if (!selectedBrand) {
-
             alert('Select Brand')
-
             return
         }
 
         try {
-
-            await fetch(
+            const response = await fetch(
                 `/api/brands/${selectedBrand.id}`,
                 {
-
                     method: 'PUT',
-
                     headers: {
                         'Content-Type':
                             'application/json'
                     },
-
                     body: JSON.stringify(formData)
-
                 }
             )
 
+            if (!response.ok) {
+                const errData = await response.json();
+                throw new Error(errData.message || "Failed to update brand");
+            }
+
             fetchBrands()
-
             resetForm()
-
         } catch (error) {
-
             console.log(error)
-
+            alert("Error: " + error.message)
         }
     }
 
     const handleDelete = async () => {
-
         if (!selectedBrand) {
-
             alert('Select Brand')
-
             return
         }
 
         try {
-
-            await fetch(
+            const response = await fetch(
                 `/api/brands/${selectedBrand.id}`,
                 {
                     method: 'DELETE'
                 }
             )
 
+            if (!response.ok) {
+                throw new Error("Failed to delete brand");
+            }
+
             fetchBrands()
-
             resetForm()
-
         } catch (error) {
-
             console.log(error)
-
+            alert("Error: " + error.message)
         }
     }
 

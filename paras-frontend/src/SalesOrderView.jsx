@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getSalesOrders, deleteSalesOrder, getAccounts } from './api';
-import { FaShoppingCart, FaQuestionCircle } from 'react-icons/fa';
+import { FaShoppingCart } from 'react-icons/fa';
 import SalesOrderEntry from './SalesOrderEntry';
 import Loading from './components/Loading';
 
@@ -29,7 +29,14 @@ export default function SalesOrderView({ onExit, reportMode = false, onCreateBil
     }
   };
 
+  const handleRowClick = (order, index) => {
+    setSelectedIndex(index);
+    setSelectedOrder(order);
+    setViewMode('entry');
+  };
+
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadOrders();
     if (!reportMode) {
       getAccounts().then(setAccounts).catch(console.error);
@@ -63,11 +70,6 @@ export default function SalesOrderView({ onExit, reportMode = false, onCreateBil
     }
   };
 
-  const handleRowClick = (order, index) => {
-    setSelectedIndex(index);
-    setSelectedOrder(order);
-    setViewMode('entry');
-  };
 
   const handleAddNew = () => {
     setShowAccountModal(true);

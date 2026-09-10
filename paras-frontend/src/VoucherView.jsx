@@ -23,7 +23,9 @@ export default function VoucherView({ onExit, type = 'Cash/Bank' }) {
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadVouchers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleDelete = async (e, id) => {
