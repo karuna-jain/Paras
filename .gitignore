@@ -12,3 +12,10 @@ logs
 # Build outputs
 dist/
 build/
+dist-electron/
+release/
+out/
+*.dmg
+*.zip
+*.exe
+*.app

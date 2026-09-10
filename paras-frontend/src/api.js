@@ -1,8 +1,10 @@
 import axios from 'axios';
 
-// The proxy in vite.config.js will handle redirecting this to http://localhost:8081
+// Determine API baseURL based on environment (Vite proxy for http/web, direct http://localhost:8081/api for Electron file://)
+const baseURL = import.meta.env.VITE_API_BASE_URL || (typeof window !== 'undefined' && window.location.protocol.startsWith('http') ? '/api' : 'http://localhost:8081/api');
+
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: baseURL,
   headers: {
     'Content-Type': 'application/json',
   },
