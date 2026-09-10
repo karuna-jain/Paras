@@ -3,10 +3,16 @@ package com.paras.paras_backend.model;
 import jakarta.persistence.*;
 import lombok.Data;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import java.math.BigDecimal;
 
 @Entity
 @Data
-@Table(name = "account_ledger")
+@Table(name = "account_ledger",
+  indexes = {
+    @Index(name = "idx_ledger_ac_code", columnList = "ac_code"),
+    @Index(name = "idx_ledger_ac_date", columnList = "ac_code,date")
+  }
+)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class AccountLedger {
     @Id
@@ -19,7 +25,7 @@ public class AccountLedger {
     @Column(name = "ac_code")
     private String acCode;
 
-    private Double amount = 0.0;
+    private BigDecimal amount = BigDecimal.ZERO;
 
     private String dc; // D / C
 

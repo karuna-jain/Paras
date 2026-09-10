@@ -4,6 +4,8 @@ import com.paras.paras_backend.model.Account;
 import com.paras.paras_backend.repository.AccountRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.ResponseEntity;
+import jakarta.validation.Valid;
 
 import java.util.List;
 
@@ -20,7 +22,7 @@ public class AccountController {
     }
 
     @PostMapping
-    public Account createAccount(@RequestBody Account account) {
+    public Account createAccount(@Valid @RequestBody Account account) {
         return accountRepository.save(account);
     }
 
@@ -69,5 +71,30 @@ public class AccountController {
     @DeleteMapping("/{id}")
     public void deleteAccount(@PathVariable Long id) {
         accountRepository.deleteById(id);
+    }
+
+    // GET by acCode (used by AcBalanceEntry, SalesOrderEntry)
+    @GetMapping("/code/{acCode}")
+    public ResponseEntity<Account> getByAcCode(@PathVariable Integer acCode) {
+        return accountRepository.findByAcCode(acCode)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    // GET next ac_code (used by AccountView ADD)
+    @GetMapping("/next-code")
+    public String getNextCode() {
+        List<Account> all = accountRepository.findAll();
+        int maxCode = all.stream()
+                .mapToInt(a -> a.getAcCode() != null ? a.getAcCode() : 0)
+                .max()
+                .orElse(100000);
+        return String.valueOf(maxCode + 1);
+    }
+
+    // GET search by name/city
+    @GetMapping("/search")
+    public List<Account> search(@RequestParam String q) {
+        return accountRepository.findByNameContainingIgnoreCase(q);
     }
 }

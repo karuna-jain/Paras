@@ -14,6 +14,7 @@ public class BrandMaster {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @jakarta.validation.constraints.NotBlank(message = "Brand code is required")
     @Column(name = "head_code", length = 4, unique = true, nullable = false)
     @JsonProperty("code")
     private String headCode;

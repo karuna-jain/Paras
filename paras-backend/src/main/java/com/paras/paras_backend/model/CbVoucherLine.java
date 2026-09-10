@@ -3,6 +3,7 @@ package com.paras.paras_backend.model;
 import jakarta.persistence.*;
 import lombok.Data;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import java.math.BigDecimal;
 
 @Entity
 @Data
@@ -30,6 +31,6 @@ public class CbVoucherLine {
     @Column(name = "dr_cr")
     private String drCr; // DR / CR
 
-    private Double amount = 0.0;
+    private BigDecimal amount = BigDecimal.ZERO;
     private String narration;
 }

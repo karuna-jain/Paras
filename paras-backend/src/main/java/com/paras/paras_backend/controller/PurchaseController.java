@@ -10,13 +10,13 @@ import com.paras.paras_backend.repository.AccountRepository;
 import com.paras.paras_backend.repository.AccountLedgerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import java.math.BigDecimal;
 
 import java.util.List;
 import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/purchases")
-@CrossOrigin("*")
 public class PurchaseController {
 
     @Autowired
@@ -115,8 +115,8 @@ public class PurchaseController {
             purchase.setAddress(updatedPurchase.getAddress());
             purchase.setCity(updatedPurchase.getCity());
 
-            double oldAmt = purchase.getNetAmount();
-            double newAmt = updatedPurchase.getNetAmount();
+            BigDecimal oldAmt = purchase.getNetAmount();
+            BigDecimal newAmt = updatedPurchase.getNetAmount();
             purchase.setTotalAmount(updatedPurchase.getTotalAmount());
             purchase.setCgst(updatedPurchase.getCgst());
             purchase.setSgst(updatedPurchase.getSgst());
@@ -136,8 +136,8 @@ public class PurchaseController {
 
             Purchase saved = purchaseRepository.save(purchase);
 
-            if (purchase.getSupplierCode() != null && !purchase.getSupplierCode().isEmpty() && oldAmt != newAmt) {
-                updateAccountBalance(purchase.getSupplierCode(), newAmt - oldAmt, "D");
+            if (purchase.getSupplierCode() != null && !purchase.getSupplierCode().isEmpty() && oldAmt.compareTo(newAmt) != 0) {
+                updateAccountBalance(purchase.getSupplierCode(), newAmt.subtract(oldAmt), "D");
             }
 
             return saved;
@@ -170,15 +170,15 @@ public class PurchaseController {
         });
     }
 
-    private void updateAccountBalance(String acNoStr, Double amount, String dc) {
+    private void updateAccountBalance(String acNoStr, BigDecimal amount, String dc) {
         try {
             Integer acCode = Integer.parseInt(acNoStr);
             accountRepository.findByAcCode(acCode).ifPresent(account -> {
-                double current = account.getBalance() != null ? account.getBalance() : 0.0;
+                BigDecimal current = account.getBalance() != null ? BigDecimal.valueOf(account.getBalance()) : BigDecimal.ZERO;
                 if ("D".equalsIgnoreCase(dc)) {
-                    account.setBalance(current + amount);
+                    account.setBalance(current.add(amount).doubleValue());
                 } else {
-                    account.setBalance(current - amount);
+                    account.setBalance(current.subtract(amount).doubleValue());
                 }
                 accountRepository.save(account);
             });

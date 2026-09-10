@@ -35,8 +35,11 @@ export default function HSNMaster({ onExit }) {
       setShowForm(false);
       setFormData({ hsnCode: '', description: '', gstRate: 18, cgstRate: 9, sgstRate: 9, igstRate: 18 });
       loadHSN();
+      alert("HSN Code added successfully");
     } catch (err) {
       console.error("Save failed", err);
+      const serverMsg = err.response?.data?.message || err.message || "Failed to save HSN entry";
+      alert("Save failed: " + serverMsg);
     }
   };
 
@@ -47,6 +50,8 @@ export default function HSNMaster({ onExit }) {
       loadHSN();
     } catch (err) {
       console.error("Delete failed", err);
+      const serverMsg = err.response?.data?.message || err.message || "Failed to delete HSN entry";
+      alert("Delete failed: " + serverMsg);
     }
   };
 

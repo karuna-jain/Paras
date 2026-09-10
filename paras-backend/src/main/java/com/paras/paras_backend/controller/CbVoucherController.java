@@ -8,13 +8,13 @@ import com.paras.paras_backend.repository.AccountRepository;
 import com.paras.paras_backend.repository.AccountLedgerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import java.math.BigDecimal;
 
 import java.util.List;
 import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/cb-vouchers")
-@CrossOrigin("*")
 public class CbVoucherController {
 
     @Autowired
@@ -27,7 +27,10 @@ public class CbVoucherController {
     private AccountLedgerRepository ledgerRepository;
 
     @GetMapping
-    public List<CbVoucher> getAllVouchers() {
+    public List<CbVoucher> getAllVouchers(@RequestParam(required = false) String type) {
+        if (type != null && !type.trim().isEmpty()) {
+            return voucherRepository.findByType(type);
+        }
         return voucherRepository.findAll();
     }
 
@@ -37,23 +40,26 @@ public class CbVoucherController {
     }
 
     @GetMapping("/next-no")
-    public String getNextVoucherNo() {
-        String max = voucherRepository.findMaxVoucherNo();
-        if (max == null || max.length() < 2) {
-            return "V0001";
+    public String getNextVoucherNo(@RequestParam(required = false) String type) {
+        boolean isJournal = "Journal".equalsIgnoreCase(type) || "JV".equalsIgnoreCase(type);
+        String max = isJournal ? voucherRepository.findMaxJournalVoucherNo() : voucherRepository.findMaxVoucherNo();
+        String prefix = isJournal ? "JV" : "V";
+        int prefixLen = prefix.length();
+        if (max == null || max.length() < prefixLen + 1) {
+            return prefix + "0001";
         }
         try {
-            int num = Integer.parseInt(max.substring(1));
-            return "V" + String.format("%04d", num + 1);
+            int num = Integer.parseInt(max.substring(prefixLen));
+            return prefix + String.format("%04d", num + 1);
         } catch (NumberFormatException e) {
-            return "V0001";
+            return prefix + "0001";
         }
     }
 
     @PostMapping
     public CbVoucher createVoucher(@RequestBody CbVoucher voucher) {
         if (voucher.getVoucherNo() == null || voucher.getVoucherNo().trim().isEmpty()) {
-            voucher.setVoucherNo(getNextVoucherNo());
+            voucher.setVoucherNo(getNextVoucherNo(voucher.getType()));
         }
 
         if (voucher.getLines() != null) {
@@ -104,15 +110,15 @@ public class CbVoucherController {
         });
     }
 
-    private void updateAccountBalance(String acNoStr, Double amount, String dc) {
+    private void updateAccountBalance(String acNoStr, BigDecimal amount, String dc) {
         try {
             Integer acCode = Integer.parseInt(acNoStr);
             accountRepository.findByAcCode(acCode).ifPresent(account -> {
-                double current = account.getBalance() != null ? account.getBalance() : 0.0;
+                BigDecimal current = account.getBalance() != null ? BigDecimal.valueOf(account.getBalance()) : BigDecimal.ZERO;
                 if ("D".equalsIgnoreCase(dc)) {
-                    account.setBalance(current + amount);
+                    account.setBalance(current.add(amount).doubleValue());
                 } else {
-                    account.setBalance(current - amount);
+                    account.setBalance(current.subtract(amount).doubleValue());
                 }
                 accountRepository.save(account);
             });

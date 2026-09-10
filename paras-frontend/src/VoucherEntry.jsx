@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { getAccounts, createVoucher, getNextVoucherNo } from './api';
 import { FaPlus, FaTrash, FaSearch } from 'react-icons/fa';
 
-export default function VoucherEntry({ voucher, onBack }) {
+export default function VoucherEntry({ voucher, type = 'Cash/Bank', onBack }) {
   const [voucherNo, setVoucherNo] = useState(voucher ? voucher.voucherNo : '');
   const [voucherDate, setVoucherDate] = useState(
     voucher ? voucher.voucherDate : new Date().toISOString().split('T')[0]
@@ -32,9 +32,9 @@ export default function VoucherEntry({ voucher, onBack }) {
   useEffect(() => {
     getAccounts().then(setAccounts).catch(console.error);
     if (!voucher) {
-      getNextVoucherNo().then(setVoucherNo).catch(console.error);
+      getNextVoucherNo(type).then(setVoucherNo).catch(console.error);
     }
-  }, [voucher]);
+  }, [voucher, type]);
 
   const handleLineChange = (index, field, value) => {
     const updated = [...lines];
@@ -119,6 +119,7 @@ export default function VoucherEntry({ voucher, onBack }) {
       voucherDate,
       totalDr,
       totalCr,
+      type,
       lines: lines.map(l => ({
         acId: l.acId,
         acCode: l.acCode,
@@ -190,7 +191,7 @@ export default function VoucherEntry({ voucher, onBack }) {
       
       {/* Title Bar */}
       <div style={{ height: '26px', background: '#000080', color: 'white', display: 'flex', alignItems: 'center', padding: '0 8px', fontWeight: 'bold', fontSize: '11px', flexShrink: 0 }}>
-        <span>CB VOUCHER ENTRY</span>
+        <span>{type.toUpperCase()} VOUCHER ENTRY</span>
       </div>
 
       {/* Header Info Panel */}

@@ -12,12 +12,6 @@ export default function ModelMaster() {
         name: ''
     })
 
-    useEffect(() => {
-
-        fetchModels()
-
-    }, [])
-
     const fetchModels = async () => {
 
         try {
@@ -35,6 +29,12 @@ export default function ModelMaster() {
 
         }
     }
+
+    useEffect(() => {
+
+        fetchModels()
+
+    }, [])
 
     const resetForm = () => {
 
@@ -76,95 +76,83 @@ export default function ModelMaster() {
         }
 
         try {
-
-            await fetch('/api/models', {
-
+            const response = await fetch('/api/models', {
                 method: 'POST',
-
                 headers: {
                     'Content-Type':
                         'application/json'
                 },
-
                 body: JSON.stringify(formData)
-
             })
 
+            if (!response.ok) {
+                const errData = await response.json();
+                throw new Error(errData.message || "Failed to add model");
+            }
+
             fetchModels()
-
             resetForm()
-
         } catch (error) {
-
             console.log(error)
-
+            alert("Error: " + error.message)
         }
     }
 
     const handleEdit = async () => {
-
         if (!selectedModel) {
-
             alert('Select Model')
-
             return
         }
 
         try {
-
-            await fetch(
+            const response = await fetch(
                 `/api/models/${selectedModel.id}`,
                 {
-
                     method: 'PUT',
-
                     headers: {
                         'Content-Type':
                             'application/json'
                     },
-
                     body: JSON.stringify(formData)
-
                 }
             )
 
+            if (!response.ok) {
+                const errData = await response.json();
+                throw new Error(errData.message || "Failed to update model");
+            }
+
             fetchModels()
-
             resetForm()
-
         } catch (error) {
-
             console.log(error)
-
+            alert("Error: " + error.message)
         }
     }
 
     const handleDelete = async () => {
-
         if (!selectedModel) {
-
             alert('Select Model')
-
             return
         }
 
         try {
-
-            await fetch(
+            const response = await fetch(
                 `/api/models/${selectedModel.id}`,
                 {
                     method: 'DELETE'
                 }
             )
 
+            if (!response.ok) {
+                throw new Error("Failed to delete model");
+            }
+
             fetchModels()
-
             resetForm()
-
         } catch (error) {
-
             console.log(error)
-
+            alert("Error: " + error.message)
         }
     }
 

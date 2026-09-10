@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import java.math.BigDecimal;
 
 @Entity
 @Data
@@ -72,17 +73,17 @@ public class SaleBill {
     private String ewayBillNo;
 
     @Column(name = "sale_amt")
-    private Double saleAmt = 0.0;
+    private BigDecimal saleAmt = BigDecimal.ZERO;
 
-    private Double cgst = 0.0;
-    private Double sgst = 0.0;
-    private Double igst = 0.0;
-    private Double postage = 0.0;
-    private Double freight = 0.0;
-    private Double hammali = 0.0;
+    private BigDecimal cgst = BigDecimal.ZERO;
+    private BigDecimal sgst = BigDecimal.ZERO;
+    private BigDecimal igst = BigDecimal.ZERO;
+    private BigDecimal postage = BigDecimal.ZERO;
+    private BigDecimal freight = BigDecimal.ZERO;
+    private BigDecimal hammali = BigDecimal.ZERO;
 
     @Column(name = "net_amt")
-    private Double netAmt = 0.0;
+    private BigDecimal netAmt = BigDecimal.ZERO;
 
     @Column(name = "pick_slip_id")
     private Long pickSlipId;

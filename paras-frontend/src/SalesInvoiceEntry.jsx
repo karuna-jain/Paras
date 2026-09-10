@@ -2,6 +2,12 @@ import { useState, useEffect } from 'react';
 import { getParts, getAccounts, createSalesInvoice, getNextBillNo, updatePickSlipInvNo, getLedgerQuery, getLedgerOpening } from './api';
 import { FaFileInvoiceDollar, FaQuestionCircle, FaPlus, FaMinus } from 'react-icons/fa';
 
+function getDayOfWeek(dateStr) {
+  if (!dateStr) return '';
+  const days = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
+  return days[new Date(dateStr).getDay()];
+}
+
 export default function SalesInvoiceEntry({ invoice, onBack, onClose, prefilledData, onClearPrefilled }) {
 
   const [formData, setFormData] = useState({
@@ -179,12 +185,6 @@ export default function SalesInvoiceEntry({ invoice, onBack, onClose, prefilledD
     }));
   }, [items, formData.inState, formData.postage, formData.freight, formData.hammali]);
 
-  function getDayOfWeek(dateStr) {
-    if (!dateStr) return '';
-    const days = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
-    return days[new Date(dateStr).getDay()];
-  }
-
   const handleDateChange = (e) => {
     const d = e.target.value;
     setFormData(f => ({ ...f, billDate: d, dayName: getDayOfWeek(d) }));
@@ -332,7 +332,16 @@ export default function SalesInvoiceEntry({ invoice, onBack, onClose, prefilledD
       {/* ── HEADER ── */}
       <div style={{ height: '26px', background: '#eef3f7', borderBottom: '1px solid #9caab7', display: 'flex', alignItems: 'center', paddingLeft: '10px', gap: '40px', flexShrink: 0 }}>
         <span style={{ fontWeight: 'bold' }}>Sale Bill Entry</span>
-        <span>21-05-2026 (THURSDAY)</span>
+        <span>
+          {(() => {
+            const now = new Date();
+            const days = ['SUNDAY','MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY'];
+            const dd = String(now.getDate()).padStart(2,'0');
+            const mm = String(now.getMonth()+1).padStart(2,'0');
+            const yyyy = now.getFullYear();
+            return `${dd}-${mm}-${yyyy} (${days[now.getDay()]})`;
+          })()}
+        </span>
         <span>PARAS AUTO PARTS</span>
         <span>(OPER)</span>
       </div>
@@ -616,8 +625,8 @@ export default function SalesInvoiceEntry({ invoice, onBack, onClose, prefilledD
                       <tr key={idx} style={{ background: idx % 2 === 0 ? '#fff' : '#f0f8ff' }}>
                         <td style={{ padding: '4px' }}>{tx.date}</td>
                         <td style={{ padding: '4px' }}>{tx.narration}</td>
-                        <td style={{ padding: '4px', textAlign: 'right' }}>{"D".equalsIgnoreCase(tx.dc) ? tx.amount?.toFixed(2) : ''}</td>
-                        <td style={{ padding: '4px', textAlign: 'right' }}>{"C".equalsIgnoreCase(tx.dc) ? tx.amount?.toFixed(2) : ''}</td>
+                        <td style={{ padding: '4px', textAlign: 'right' }}>{tx.dc && tx.dc.toUpperCase() === "D" ? tx.amount?.toFixed(2) : ''}</td>
+                        <td style={{ padding: '4px', textAlign: 'right' }}>{tx.dc && tx.dc.toUpperCase() === "C" ? tx.amount?.toFixed(2) : ''}</td>
                         <td style={{ padding: '4px', textAlign: 'center' }}>{tx.dc}</td>
                         <td style={{ padding: '4px', textAlign: 'right', fontWeight: 'bold' }}>{tx.amount?.toFixed(2)}</td>
                         <td style={{ padding: '4px' }}>{tx.source}</td>

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-export default function PartsView() {
+export default function PartsView({ onExit }) {
 
   const [parts, setParts] = useState([]);
   const [selectedIndex, setSelectedIndex] = useState(null);
@@ -35,16 +35,23 @@ export default function PartsView() {
 
   const [brands, setBrands] = useState([])
   const [models, setModels] = useState([])
-  const hsnList = [
-    { code: '8714', desc: 'Parts And Accessories', gst: '18' },
-    { code: '8409', desc: 'Engine Parts', gst: '28' },
-  ];
+  const [hsnList, setHsnList] = useState([])
 
   const priceColumns = [
     { title: 'PURCHASE PRICE', priceField: 'purchasePrice', discountField: 'purchaseDiscount' },
     { title: 'WHOLE SALE PRICE', priceField: 'wholesalePrice', discountField: 'wholesaleDiscount' },
     { title: 'RETAIL SALE', priceField: 'retailPrice', discountField: 'retailDiscount' },
   ];
+
+  const fetchParts = async () => {
+    try {
+      const response = await fetch('/api/parts');
+      const data = await response.json();
+      setParts(data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   useEffect(() => {
 
@@ -58,16 +65,18 @@ export default function PartsView() {
       .then(res => res.json())
       .then(data => setModels(data))
 
+    fetch('/api/hsn-master')
+      .then(res => res.json())
+      .then(data => {
+        setHsnList(data.map(h => ({
+          code: h.hsnCode,
+          desc: h.description,
+          gst: String(h.gstRate)
+        })));
+      })
+      .catch(error => console.log(error));
+
   }, [])
-  const fetchParts = async () => {
-    try {
-      const response = await fetch('/api/parts');
-      const data = await response.json();
-      setParts(data);
-    } catch (error) {
-      console.log(error);
-    }
-  };
 
   const calcFinal = (price, discount) => {
     const p = parseFloat(price) || 0;
@@ -130,10 +139,19 @@ export default function PartsView() {
         await fetchParts();   // ← re-fetch all from DB, IDs are always correct
         resetForm();
       } else {
-        const err = await response.text();
-        alert('Add failed: ' + err);
+        let errMsg = 'Add failed';
+        try {
+          const errData = await response.json();
+          errMsg = errData.message || errMsg;
+        } catch (e) {
+          errMsg = await response.text() || errMsg;
+        }
+        alert(errMsg);
       }
-    } catch (error) { console.log(error); }
+    } catch (error) { 
+      console.log(error);
+      alert('Network error occurred.');
+    }
   };
 
   const handleEdit = async () => {
@@ -150,10 +168,19 @@ export default function PartsView() {
         await fetchParts();   // ← re-fetch all from DB
         resetForm();
       } else {
-        const err = await response.text();
-        alert('Edit failed: ' + err);
+        let errMsg = 'Edit failed';
+        try {
+          const errData = await response.json();
+          errMsg = errData.message || errMsg;
+        } catch (e) {
+          errMsg = await response.text() || errMsg;
+        }
+        alert(errMsg);
       }
-    } catch (error) { console.log(error); }
+    } catch (error) { 
+      console.log(error);
+      alert('Network error occurred.');
+    }
   };
 
   const handleDelete = async () => {
@@ -161,10 +188,17 @@ export default function PartsView() {
     if (!window.confirm('Delete this part?')) return;
     const dbId = parts[selectedIndex].id;
     try {
-      await fetch(`/api/parts/${dbId}`, { method: 'DELETE' });
-      await fetchParts();   // ← re-fetch all from DB
-      resetForm();
-    } catch (error) { console.log(error); }
+      const response = await fetch(`/api/parts/${dbId}`, { method: 'DELETE' });
+      if (response.ok) {
+        await fetchParts();   // ← re-fetch all from DB
+        resetForm();
+      } else {
+        alert("Delete failed: Part could not be deleted from the database.");
+      }
+    } catch (error) { 
+      console.log(error); 
+      alert('Network error occurred.');
+    }
   };
 
   // ── Navigation ────────────────────────────────────────────────────────
@@ -255,7 +289,16 @@ export default function PartsView() {
       {/* HEADER */}
       <div className="h-[26px] border border-[#9caab7] bg-[#eef3f7] flex items-center px-[8px]">
         <div className="w-[180px]">Part Master Entry</div>
-        <div className="w-[180px] text-center">05-05-2026 (TUESDAY)</div>
+        <div className="w-[180px] text-center">
+          {(() => {
+            const now = new Date();
+            const days = ['SUNDAY','MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY'];
+            const dd = String(now.getDate()).padStart(2,'0');
+            const mm = String(now.getMonth()+1).padStart(2,'0');
+            const yyyy = now.getFullYear();
+            return `${dd}-${mm}-${yyyy} (${days[now.getDay()]})`;
+          })()}
+        </div>
         <div className="w-[220px] text-center">PARAS AUTO PARTS</div>
         <div>(OPER)</div>
       </div>
@@ -592,9 +635,7 @@ export default function PartsView() {
           <button onClick={handleNext} disabled={parts.length === 0 || currentNavIndex === parts.length - 1} className="h-[28px] border border-[#596c7b] bg-[#f5f5f5] text-[11px] font-bold hover:bg-[#e0e0e0] disabled:opacity-40 disabled:cursor-not-allowed">{'NEXT>>'}</button>
           <button onClick={handleLast} disabled={parts.length === 0} className="h-[28px] border border-[#596c7b] bg-[#f5f5f5] text-[11px] font-bold hover:bg-[#e0e0e0] disabled:opacity-40 disabled:cursor-not-allowed">LAST</button>
           <button
-            onClick={() => {
-              window.location.href = '/';
-            }} className="h-[28px] border border-[#7a0000] bg-[#ff1f1f] text-white text-[11px] font-bold hover:bg-[#cc0000]">CLOSE</button>
+            onClick={onExit} className="h-[28px] border border-[#7a0000] bg-[#ff1f1f] text-white text-[11px] font-bold hover:bg-[#cc0000]">CLOSE</button>
         </div>
       </div>
 

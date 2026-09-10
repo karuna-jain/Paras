@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { getParts, getAccounts, createSalesOrder, updateSalesOrder, savePickSlip, getLedgerQuery, getLedgerOpening, getPendingWhatsappMessage, markWhatsappProcessed } from './api';
 import { FaShoppingCart, FaQuestionCircle, FaInfoCircle } from 'react-icons/fa';
 import AccountView from './AccountView';
+import PickSlipPrintView from './PickSlipPrintView';
 
 export default function SalesOrderEntry({ order, onBack, onClose, prefilledAccount, onCreateBill, reportMode }) {
 
@@ -58,6 +59,8 @@ export default function SalesOrderEntry({ order, onBack, onClose, prefilledAccou
   
   const [showAccountModal, setShowAccountModal] = useState(false);
   const [showPrintDialog, setShowPrintDialog] = useState(false);
+  const [showPickSlip, setShowPickSlip] = useState(false);
+  const [printWithSRate, setPrintWithSRate] = useState(true);
   const [showNewAccountModal, setShowNewAccountModal] = useState(false);
   const [showWaModal, setShowWaModal] = useState(false);
   
@@ -102,6 +105,22 @@ export default function SalesOrderEntry({ order, onBack, onClose, prefilledAccou
     getAccounts().then(setAccounts).catch(console.error);
     fetch('/api/brands').then(res => res.json()).then(setBrandHelpList).catch(console.error);
   }, []);
+
+  const fillFromAccount = (acc) => {
+    setFormData(p => ({
+      ...p,
+      partyCd: acc.acCode?.toString() || '',
+      customerName: acc.acName || acc.name || '',
+      address: acc.addOff1 || acc.addressOff || acc.address || '',
+      city: acc.city || '',
+      phoneO: acc.phO || acc.phoneO || '',
+      phoneR: acc.phR || acc.phoneR || '',
+      cellNo: acc.mobileNo || '',
+      transport: acc.transport || '',
+    }));
+    setIsDirty(true);
+    setShowAccountModal(false);
+  };
 
   useEffect(() => {
     if (prefilledAccount && !order) {
@@ -158,22 +177,6 @@ export default function SalesOrderEntry({ order, onBack, onClose, prefilledAccou
       setAccountSearch(formData.partyCd);
       setShowAccountModal(true);
     }
-  };
-
-  const fillFromAccount = (acc) => {
-    setFormData(p => ({
-      ...p,
-      partyCd: acc.acCode?.toString() || '',
-      customerName: acc.acName || acc.name || '',
-      address: acc.addOff1 || acc.addressOff || acc.address || '',
-      city: acc.city || '',
-      phoneO: acc.phO || acc.phoneO || '',
-      phoneR: acc.phR || acc.phoneR || '',
-      cellNo: acc.mobileNo || '',
-      transport: acc.transport || '',
-    }));
-    setIsDirty(true);
-    setShowAccountModal(false);
   };
 
   // ── item helpers ──────────────────────────────────────────────
@@ -560,6 +563,38 @@ export default function SalesOrderEntry({ order, onBack, onClose, prefilledAccou
     height: '28px',
   };
 
+  if (showPickSlip) {
+    return (
+      <PickSlipPrintView
+        formData={{
+          customerName: formData.customerName,
+          address: formData.address,
+          city: formData.city,
+          partyCd: formData.partyCd,
+          orderDate: formData.orderDate,
+          phone: formData.phoneO || formData.cellNo,
+          transport: formData.transport,
+          remarks: formData.remarks
+        }}
+        items={items.map(i => ({
+          brand: i.brand,
+          partNo: i.partNo,
+          qty: i.pickQty !== undefined ? i.pickQty : i.ordQty,
+          description: i.description,
+          model: i.model,
+          list: i.list,
+          dis: i.dis,
+          netSale: i.netSale,
+          amount: i.amount
+        }))}
+        totalAmount={totalAmount}
+        onBack={() => setShowPickSlip(false)}
+        onCreateBill={handleCreateBill}
+        fromOrderId={order?.id || savedOrderId}
+      />
+    );
+  }
+
   return (
     <div style={{
       width: '100%', height: '100vh', display: 'flex', flexDirection: 'column',
@@ -575,7 +610,30 @@ export default function SalesOrderEntry({ order, onBack, onClose, prefilledAccou
         paddingLeft: '10px', gap: '40px', flexShrink: 0,
       }}>
         <span style={{ fontWeight: 'bold' }}>{pickSlipMode ? 'PICK-SLIP' : 'S.Order Entry'}</span>
-        <span>{formData.orderDate ? formData.orderDate : '21-05-2026'} (THURSDAY)</span>
+        <span>
+          {(() => {
+            const dateStr = formData.orderDate; // yyyy-mm-dd or similar
+            let d = new Date();
+            let displayStr;
+            if (dateStr) {
+              const parts = dateStr.split('-');
+              if (parts.length === 3) {
+                // assume yyyy-mm-dd
+                d = new Date(parts[0], parts[1]-1, parts[2]);
+                displayStr = `${parts[2]}-${parts[1]}-${parts[0]}`;
+              } else {
+                displayStr = dateStr;
+              }
+            } else {
+              const dd = String(d.getDate()).padStart(2,'0');
+              const mm = String(d.getMonth()+1).padStart(2,'0');
+              const yyyy = d.getFullYear();
+              displayStr = `${dd}-${mm}-${yyyy}`;
+            }
+            const days = ['SUNDAY','MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY'];
+            return `${displayStr} (${days[d.getDay()]})`;
+          })()}
+        </span>
         <span>PARAS AUTO PARTS</span>
         <span>(OPER)</span>
       </div>
@@ -1055,7 +1113,15 @@ export default function SalesOrderEntry({ order, onBack, onClose, prefilledAccou
         <div style={overlayStyle}>
           <div style={{ ...modalStyle, width: '680px' }}>
             <div style={modalHeaderStyle}>
-              <span>Add Items — 21-05-2026</span>
+              <span>
+                {(() => {
+                  const now = new Date();
+                  const dd = String(now.getDate()).padStart(2,'0');
+                  const mm = String(now.getMonth()+1).padStart(2,'0');
+                  const yyyy = now.getFullYear();
+                  return `Add Items — ${dd}-${mm}-${yyyy}`;
+                })()}
+              </span>
               <div style={{ display: 'flex', gap: '4px' }}>
                 <button style={{ background: 'none', border: 'none', color: 'white', fontWeight: 'bold' }}>—</button>
                 <button style={{ background: 'none', border: 'none', color: 'white', fontWeight: 'bold' }}>□</button>
@@ -1355,12 +1421,12 @@ export default function SalesOrderEntry({ order, onBack, onClose, prefilledAccou
                       let bal = ledgerBal;
                       return ledgerTxs.slice(0, 20).map((tx, idx) => {
                         const amt = tx.amount || 0;
-                        if ("D".equalsIgnoreCase(tx.dc)) {
+                        if (tx.dc && tx.dc.toUpperCase() === "D") {
                           bal += amt;
                         } else {
                           bal -= amt;
                         }
-                        const isCredit = "C".equalsIgnoreCase(tx.dc);
+                        const isCredit = tx.dc && tx.dc.toUpperCase() === "C";
                         return (
                           <tr key={idx} style={{ background: isCredit ? '#e8f4ff' : '#ffffff', borderBottom: '1px solid #eee' }}>
                             <td style={{ padding: '4px', borderRight: '1px solid #ccc' }}>{tx.date}</td>
@@ -1532,6 +1598,34 @@ export default function SalesOrderEntry({ order, onBack, onClose, prefilledAccou
       )}
 
       {/* ── NEW ACCOUNT MODAL ── */}
+      {showWaModal && (
+        <div style={overlayStyle}>
+          <div style={{ ...modalStyle, width: '400px' }}>
+            <div style={modalHeaderStyle}>
+              <span>WhatsApp Order Intake</span>
+              <button onClick={() => setShowWaModal(false)} style={closeXStyle}>✕</button>
+            </div>
+            <div style={{ padding: '15px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div style={{ fontWeight: 'bold' }}>Incoming Text:</div>
+              <textarea
+                value={waText}
+                onChange={e => setWaText(e.target.value)}
+                style={{ width: '100%', height: '150px', border: '1px solid #999', padding: '6px', fontSize: '12px', fontFamily: 'monospace' }}
+                placeholder="Quantity PartNo&#10;Example:&#10;5 BS-001&#10;2 SP-002"
+              />
+              <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                <button onClick={handleWaParse} style={topBtnStyle('#25D366', 'white')}>
+                  Parse & Import
+                </button>
+                <button onClick={() => setShowWaModal(false)} style={topBtnStyle()}>
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {showNewAccountModal && (
         <div style={{ ...overlayStyle, zIndex: 3000 }}>
           <div style={{

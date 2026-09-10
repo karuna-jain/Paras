@@ -561,7 +561,7 @@ export default function PurchaseInvoiceEntry({ invoice, onBack }) {
                   {filteredAccounts.map((a, idx) => (
                     <tr
                       key={idx}
-                      onClick={() => selectAccount ? selectAccount(a) : fillFromAccount(a)}
+                      onClick={() => fillFromAccount(a)}
                       style={{ cursor: 'pointer', background: idx % 2 === 0 ? '#fff' : '#f4f4f4', borderBottom: '1px solid #e8e8e8' }}
                       className="hover:bg-blue-100"
                     >

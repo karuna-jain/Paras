@@ -194,6 +194,21 @@ export default function AccountView({ onExit, onSelect }) {
       return;
     }
 
+    if (formData.mobileNo && !/^[0-9]{10}$/.test(formData.mobileNo)) {
+      alert("Invalid Mobile Number: Must be exactly 10 digits.");
+      return;
+    }
+
+    if (formData.emailId && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.emailId)) {
+      alert("Invalid Email Address format.");
+      return;
+    }
+
+    if (formData.gstin && !/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[0-9A-Z]{1}Z[0-9A-Z]{1}$/i.test(formData.gstin)) {
+      alert("Invalid GSTIN: Must follow standard 15-character format (e.g., 23AMJPJ1775A1ZG).");
+      return;
+    }
+
     try {
       if (type === 'ADD') {
         const saved = await createAccount(formData);
@@ -210,7 +225,8 @@ export default function AccountView({ onExit, onSelect }) {
       }
     } catch (err) {
       console.error("Operation failed", err);
-      alert("Error saving account");
+      const serverMsg = err.response?.data?.message || err.message || "Error saving account";
+      alert("Save failed: " + serverMsg);
     }
   };
 

@@ -1,12 +1,29 @@
 import axios from 'axios';
 
-// The proxy in vite.config.js will handle redirecting this to http://localhost:8081
+// Always use relative '/api' path.
+// - In Vite dev mode (browser): the Vite dev server proxy forwards /api/* to localhost:8081.
+// - In Electron production: electron/main.js registers a custom 'app://' protocol
+//   that intercepts /api/* requests and proxies them to localhost:8081.
 const api = axios.create({
   baseURL: '/api',
   headers: {
     'Content-Type': 'application/json',
   },
 });
+
+
+api.interceptors.response.use(
+  response => response,
+  error => {
+    if (error.response?.status === 401) {
+      window.location.href = '/login';
+    }
+    if (error.response?.status >= 500) {
+      console.error('Server error:', error.response.data);
+    }
+    return Promise.reject(error);
+  }
+);
 
 export const getCustomers = () => api.get('/customers').then(res => res.data);
 export const createCustomer = (customer) => api.post('/customers', customer).then(res => res.data);
@@ -46,11 +63,17 @@ export const updatePurchaseInvoice = (id, invoice) => api.put(`/purchases/${id}`
 export const deletePurchaseInvoice = (id) => api.delete(`/purchases/${id}`);
 export const getNextPurchaseNo = () => api.get('/purchases/next-no').then(res => res.data);
 
-export const getVouchers = () => api.get('/cb-vouchers').then(res => res.data);
+export const getVouchers = (type) => {
+  const query = type ? `?type=${type}` : '';
+  return api.get(`/cb-vouchers${query}`).then(res => res.data);
+};
 export const getVoucher = (id) => api.get(`/cb-vouchers/${id}`).then(res => res.data);
 export const createVoucher = (voucher) => api.post('/cb-vouchers', voucher).then(res => res.data);
 export const deleteVoucher = (id) => api.delete(`/cb-vouchers/${id}`);
-export const getNextVoucherNo = () => api.get('/cb-vouchers/next-no').then(res => res.data);
+export const getNextVoucherNo = (type) => {
+  const query = type ? `?type=${type}` : '';
+  return api.get(`/cb-vouchers/next-no${query}`).then(res => res.data);
+};
 
 export const postDebit = (ledger) => api.post('/ledger/debit', ledger).then(res => res.data);
 export const postCredit = (ledger) => api.post('/ledger/credit', ledger).then(res => res.data);

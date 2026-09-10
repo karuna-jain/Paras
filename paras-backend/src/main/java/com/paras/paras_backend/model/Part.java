@@ -18,7 +18,8 @@ public class Part {
 
     private String brand;
 
-    @Column(name = "part_no")
+    @jakarta.validation.constraints.NotBlank(message = "Part Number is required")
+    @Column(name = "part_no", unique = true, nullable = false, length = 50)
     @JsonProperty("partNo")
     private String partNo;
 
