@@ -24,4 +24,13 @@ export default defineConfig([
       'no-useless-assignment': 'off',
     },
   },
+  {
+    files: ['electron/**/*.{js,jsx}'],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+        ...globals.browser,
+      },
+    },
+  },
 ])
